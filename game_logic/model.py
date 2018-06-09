@@ -9,21 +9,6 @@ class Engine(object):
         self.game_state = 0
 
 
-    def make_player_move(self, curr_move):
-        if self.check_valid_move(curr_move):
-            # movement updates
-            self.board[curr_move.x][curr_move.y] = self.player
-            self.prev_move = curr_move
-            # game state updates
-            self.update_master_board()
-            self.update_game_state()
-            # player updates
-            self.update_player()
-            return True
-
-        return False
-
-
     @staticmethod
     def check_board_win(board):
         # checking verticals
@@ -82,3 +67,11 @@ class Engine(object):
             self.player = 'O'
         else:
             self.player = 'X'
+
+
+    def reset_game(self):
+        self.board = [[None] * 9] * 9
+        self.master_board = [None] * 9 # contains the current state of all other boards
+        self.prev_move = Coord(None, None)
+        self.player = 'X'
+        self.game_state = 0
