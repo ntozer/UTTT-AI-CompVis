@@ -1,11 +1,11 @@
 from coord import Coord
 
-class Engine(object):
+class Engine():
     def __init__(self):
         self.board = [[None] * 9] * 9
         self.master_board = [None] * 9 # contains the win states of all other boards
         self.prev_move = Coord(None, None)
-        self.player = 'X'
+        self.player = 1
         self.game_state = 0
 
 
@@ -63,15 +63,15 @@ class Engine(object):
 
     
     def update_player(self):
-        if self.player == 'X':
-            self.player = 'O'
+        if self.player == 1:
+            self.player = 2
         else:
-            self.player = 'X'
+            self.player = 1
 
 
     def reset_game(self):
         self.board = [[None] * 9] * 9
         self.master_board = [None] * 9 # contains the current state of all other boards
         self.prev_move = Coord(None, None)
-        self.player = 'X'
+        self.player = 1
         self.game_state = 0
