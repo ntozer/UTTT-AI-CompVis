@@ -2,8 +2,8 @@ from coord import Coord
 
 class Engine():
     def __init__(self):
-        self.board = [[None] * 9] * 9
-        self.master_board = [None] * 9 # contains the win states of all other boards
+        self.board = [[None for i in range(9)] for j in range(9)]
+        self.master_board = [None for i in range(9)] # contains the win states of all other boards
         self.prev_move = Coord(None, None)
         self.player = 1
         self.game_state = 0
@@ -36,15 +36,15 @@ class Engine():
 
 
     def update_game_state(self):
-        if player_won():
-            self.game_state = self.player
-        else: 
-            self.game_state = 1
-
         def player_won():
             if self.check_board_win(self.master_board):
                 return True
             return False
+        
+        if player_won():
+            self.game_state = self.player
+        else: 
+            self.game_state = 1
 
 
     def check_valid_move(self, curr_move):
@@ -52,9 +52,11 @@ class Engine():
             if self.prev_move.y != curr_move.x:
                 if self.master_board[self.prev_move.y] is None:
                     return False
-
+            
         try:
             if self.board[curr_move.x][curr_move.y] is not None:
+                return False
+            if self.master_board[curr_move.x] is not None:
                 return False
         except IndexError:
             return False
