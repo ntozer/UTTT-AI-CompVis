@@ -1,4 +1,4 @@
-from coord import Coord
+from GameLogic.coord import Coord
 
 class Engine():
     def __init__(self):

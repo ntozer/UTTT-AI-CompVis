@@ -1,6 +1,6 @@
-from coord import Coord
-from model import Engine
-from view import View
+from GameLogic.coord import Coord
+from GameLogic.model import Engine
+from GameLogic.view import View
 
 import tkinter as tk
 
