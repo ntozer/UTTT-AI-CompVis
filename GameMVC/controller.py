@@ -1,6 +1,6 @@
-from GameLogic.coord import Coord
-from GameLogic.model import Engine
-from GameLogic.view import View
+from .coord import Coord
+from .model import Engine
+from .view import View
 
 import tkinter as tk
 
@@ -37,7 +37,7 @@ class Controller():
                 else:
                     event.widget.configure(bg=self.view.p2_colors[color_idx])
             # player updates
-            self.model.update_player()  
+            self.model.update_player()
         
 
     def handle_enter(self, event):
