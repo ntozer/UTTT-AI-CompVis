@@ -48,7 +48,7 @@ class Engine():
     def check_valid_move(self, curr_move):
         if self.check_board_win(self.master_board):
             return False
-            
+
         if self.prev_move.x is not None:
             if self.prev_move.y != curr_move.x:
                 if self.master_board[self.prev_move.y] is None:
