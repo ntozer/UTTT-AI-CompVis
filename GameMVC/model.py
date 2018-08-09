@@ -1,4 +1,4 @@
-from coord import Coord
+from .coord import Coord
 
 class Engine():
     def __init__(self):
@@ -43,11 +43,12 @@ class Engine():
         
         if player_won():
             self.game_state = self.player
-        else: 
-            self.game_state = 1
 
 
     def check_valid_move(self, curr_move):
+        if self.check_board_win(self.master_board):
+            return False
+
         if self.prev_move.x is not None:
             if self.prev_move.y != curr_move.x:
                 if self.master_board[self.prev_move.y] is None:
@@ -64,6 +65,17 @@ class Engine():
         return True
 
     
+    def get_valid_moves(self):
+        valid_moves = []
+        for i in range(9):
+            if self.master_board[i] is None:
+                for j in range(9):
+                    if self.check_valid_move(Coord(i, j)):
+                        valid_moves.append(Coord(i, j))
+
+        return valid_moves
+
+
     def update_player(self):
         if self.player == 1:
             self.player = 2
