@@ -1,4 +1,5 @@
 import tkinter as tk
+from .coord import Coord
 
 class View(tk.Frame):
     def __init__(self, parent):
@@ -11,8 +12,8 @@ class View(tk.Frame):
         self.p2_colors = ('RoyalBlue1', 'SlateBlue3')
         self.invalid_colors = ('gray15', 'gray10')
 
+        #creating game board interface
         self.board_spaces = [[tk.Label(self, text=chr(65+i)+str(j), font='Courier', bg=(self.colors[0] if i%2==0 else self.colors[1]), width=4, height=2) for j in range(9)] for i in range(9)]
-
         for i in range(9):
             for j in range(9):
                 #calculation of converted row idx
@@ -21,6 +22,35 @@ class View(tk.Frame):
                 l = 3*(i%3) + (j%3)
                 self.board_spaces[i][j].grid(row=k, column=l)
                 
+        #placing restart button
+        self.restart_btn = tk.Button(self, text='Restart')
+        self.restart_btn.grid(row=1, column=9, padx=10)
+
+
+    def reset_board(self):
+        for i in range(9):
+            for j in range(9):
+                color_idx = 1
+                if i%2 == 0:
+                    color_idx = 0
+                self.board_spaces[i][j].configure(bg=self.colors[color_idx])
+
+
+    def update_visuals(self, coord, player):
+        def get_active_board_tile(coord):
+            return self.board_spaces[coord.x][coord.y]
+
+        active_tile = get_active_board_tile(coord)
+
+        if active_tile['bg'] not in self.p1_colors and active_tile['bg'] not in self.p2_colors:
+            color_idx = 1
+            if active_tile['bg'] == self.valid_colors[0] or active_tile['bg'] == self.colors[0]:
+                color_idx = 0
+            if player == 1:
+                active_tile.configure(bg=self.p1_colors[color_idx])
+            else:
+                active_tile.configure(bg=self.p2_colors[color_idx])
+
 
 if __name__ == "__main__":
     root = tk.Tk()

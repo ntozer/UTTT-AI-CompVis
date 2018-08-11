@@ -33,34 +33,16 @@ class Controller():
             self.model.update_master_board()
             self.model.update_game_state()
             # update visuals
-            self.update_visuals(move)
+            self.view.update_visuals(move, self.model.player)
             # player updates
             self.model.update_player()
-            
-            if self.agent is not None and self.model.player == 2 and self.model.game_state == 0:
-                self.make_move(self.get_agent_move())
+
+            self.make_agent_move()
 
 
-    def update_visuals(self, coord):
-        
-        def get_active_board_tile(coord):
-            return self.view.board_spaces[coord.x][coord.y]
-
-        active_tile = get_active_board_tile(coord)
-
-        if active_tile['bg'] not in self.view.p1_colors and active_tile['bg'] not in self.view.p2_colors:
-            color_idx = 1
-            if active_tile['bg'] == self.view.valid_colors[0]:
-                color_idx = 0
-            if self.model.player == 1:
-                active_tile.configure(bg=self.view.p1_colors[color_idx])
-            else:
-                active_tile.configure(bg=self.view.p2_colors[color_idx])
-
-
-    def get_agent_move(self):
+    def make_agent_move(self):
         move = self.agent.compute_next_move(self.model.board, self.model.get_valid_moves())
-        return move
+        self.make_move(move)
 
 
     def handle_enter(self, event):
@@ -85,6 +67,11 @@ class Controller():
         elif event.widget['bg'] in [self.view.valid_colors[1], self.view.invalid_colors[1]]:
             event.widget.configure(bg=self.view.colors[1])
 
+    
+    def restart_game(self, event):
+        self.model.reset_game()
+        self.view.reset_board()
+
 
     def bind_actions(self):
         for i in range(9):
@@ -92,3 +79,5 @@ class Controller():
                 self.view.board_spaces[i][j].bind("<Enter>", self.handle_enter)
                 self.view.board_spaces[i][j].bind("<Leave>", self.handle_leave)
                 self.view.board_spaces[i][j].bind("<Button-1>", self.handle_click)
+                self.view.restart_btn.bind("<Button-1>", self.restart_game)
+            

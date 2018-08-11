@@ -46,6 +46,9 @@ class Engine():
 
 
     def check_valid_move(self, curr_move):
+        if curr_move is None:
+            return False
+
         if self.check_board_win(self.master_board):
             return False
 
@@ -84,8 +87,8 @@ class Engine():
 
 
     def reset_game(self):
-        self.board = [[None] * 9] * 9
-        self.master_board = [None] * 9 # contains the current state of all other boards
+        self.board = [[None for i in range(9)] for j in range(9)]
+        self.master_board = [None for i in range(9)]
         self.prev_move = Coord(None, None)
         self.player = 1
         self.game_state = 0
