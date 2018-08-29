@@ -6,15 +6,14 @@ from .GameAgents import *
 import tkinter as tk
 
 class Controller():
-    def __init__(self, root, agent=None):
+    def __init__(self, root, params):
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.agent = RandomAgent()
-    
-
-    def restart(self):
-        self.model.reset_game()
+        self.agent = params['agent']
+        self.list_moves = params['list_moves']
+        self.write_moves = False
+        self.move_list = [] 
 
 
     def handle_click(self, event):
@@ -36,8 +35,15 @@ class Controller():
             self.view.update_visuals(move, self.model.player)
             # player updates
             self.model.update_player()
-
-            self.make_agent_move()
+            
+            # output and record moves
+            move_code = chr(move.x + 97) + str(move.y)
+            if self.list_moves:
+                print(move_code)
+            if self.write_moves:
+                self.move_list.append(move_code)
+                if self.model.game_state != 0:
+                    print(self.move_list)
 
 
     def make_agent_move(self):
