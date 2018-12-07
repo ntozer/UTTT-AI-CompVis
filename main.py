@@ -10,6 +10,9 @@ def create_agent(agent_type):
     elif agent_type == 'minimax':
         print('TODO: create minimax agent')
         return None
+    elif agent_type == 'montecarlo':
+        print('TODO: create montecarlo agent')
+        return None
     elif agent_type == 'reinforcment':
         print('TODO: create RL agent')
         return None
@@ -34,7 +37,7 @@ def handle_cl_args(params):
 
 
 if __name__ == '__main__':
-    params = { 'agent': None, 'list_moves': False }
+    params = {'agent': None, 'list_moves': False}
     handle_cl_args(params)
     root = tk.Tk()
     app = Controller(root, params)
