@@ -8,7 +8,6 @@ class Engine():
         self.player = 1
         self.game_state = 0
 
-
     @staticmethod
     def check_board_win(board):
         # checking verticals
@@ -29,11 +28,9 @@ class Engine():
                     return True
         return False
 
-
     def update_master_board(self):
         if self.check_board_win(self.board[self.prev_move.x]):
             self.master_board[self.prev_move.x] = self.player
-
 
     def update_game_state(self):
         def player_won():
@@ -43,7 +40,6 @@ class Engine():
         
         if player_won():
             self.game_state = self.player
-
 
     def check_valid_move(self, curr_move):
         if curr_move is None:
@@ -67,7 +63,6 @@ class Engine():
 
         return True
 
-    
     def get_valid_moves(self):
         valid_moves = []
         for i in range(9):
@@ -78,13 +73,11 @@ class Engine():
 
         return valid_moves
 
-
     def update_player(self):
         if self.player == 1:
             self.player = 2
         else:
             self.player = 1
-
 
     def reset_game(self):
         self.board = [[None for i in range(9)] for j in range(9)]

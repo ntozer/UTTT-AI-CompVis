@@ -1,6 +1,6 @@
 import tkinter as tk
 from GameMVC import Controller
-from GameMVC.GameAgents import *
+from GameAgents import *
 import sys
 
 

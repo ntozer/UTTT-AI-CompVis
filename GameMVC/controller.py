@@ -1,9 +1,7 @@
 from .coord import Coord
 from .model import Engine
 from .view import View
-from .GameAgents import *
 
-import tkinter as tk
 
 class Controller():
     def __init__(self, root, params):
@@ -22,7 +20,6 @@ class Controller():
         move = Coord(x, y)
         self.make_move(move)
 
-        
     def make_move(self, move):
         if self.model.check_valid_move(move):
             # movement updates
@@ -45,11 +42,9 @@ class Controller():
                 if self.model.game_state != 0:
                     print(self.move_list)
 
-
     def make_agent_move(self):
         move = self.agent.compute_next_move(self.model.board, self.model.get_valid_moves())
         self.make_move(move)
-
 
     def handle_enter(self, event):
         x = ord(event.widget['text'][0]) - 65
@@ -66,18 +61,15 @@ class Controller():
         elif event.widget['bg'] == self.view.colors[1]:
             event.widget.configure(bg=colors_to_use[1])
 
-
     def handle_leave(self, event):
         if event.widget['bg'] in [self.view.valid_colors[0], self.view.invalid_colors[0]]:
             event.widget.configure(bg=self.view.colors[0])
         elif event.widget['bg'] in [self.view.valid_colors[1], self.view.invalid_colors[1]]:
             event.widget.configure(bg=self.view.colors[1])
 
-    
     def restart_game(self, event):
         self.model.reset_game()
         self.view.reset_board()
-
 
     def bind_actions(self):
         for i in range(9):
@@ -86,4 +78,3 @@ class Controller():
                 self.view.board_spaces[i][j].bind("<Leave>", self.handle_leave)
                 self.view.board_spaces[i][j].bind("<Button-1>", self.handle_click)
                 self.view.restart_btn.bind("<Button-1>", self.restart_game)
-            
