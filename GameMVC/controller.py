@@ -1,6 +1,6 @@
-from .coord import Coord
-from .model import Engine
-from .view import View
+from GameMVC import *
+from GameAgents import *
+import time
 
 
 class Controller():
@@ -8,11 +8,11 @@ class Controller():
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.agent = params['agent']
+        self.agent = MonteCarloAgent()
         self.list_moves = params['list_moves']
         self.write_moves = False
-        self.move_list = [] 
-
+        self.move_list = []
+        self.simulate = False
 
     def handle_click(self, event):
         x = ord(event.widget['text'][0]) - 65
@@ -39,11 +39,14 @@ class Controller():
                 print(move_code)
             if self.write_moves:
                 self.move_list.append(move_code)
-                if self.model.game_state != 0:
+                if self.model.game_state is not None:
                     print(self.move_list)
 
+        if self.model.player == 2 and not self.simulate:
+            self.make_agent_move()
+
     def make_agent_move(self):
-        move = self.agent.compute_next_move(self.model.board, self.model.get_valid_moves())
+        move = self.agent.compute_next_move(self.model.get_valid_moves(), self.model.prev_move)
         self.make_move(move)
 
     def handle_enter(self, event):
@@ -67,9 +70,24 @@ class Controller():
         elif event.widget['bg'] in [self.view.valid_colors[1], self.view.invalid_colors[1]]:
             event.widget.configure(bg=self.view.colors[1])
 
-    def restart_game(self, event):
+    def restart_game(self, event=None):
         self.model.reset_game()
         self.view.reset_board()
+
+    def toggle_simulate(self, event):
+        if not self.simulate:
+            self.simulate = True
+            self.run_simulations()
+        else:
+            self.simulate = False
+
+    def run_simulations(self):
+        while True:
+            while self.model.game_state is None:
+                self.make_agent_move()
+            self.agent.update(self.model.game_state)
+            self.agent.reset_agent()
+            self.restart_game()
 
     def bind_actions(self):
         for i in range(9):
@@ -77,4 +95,5 @@ class Controller():
                 self.view.board_spaces[i][j].bind("<Enter>", self.handle_enter)
                 self.view.board_spaces[i][j].bind("<Leave>", self.handle_leave)
                 self.view.board_spaces[i][j].bind("<Button-1>", self.handle_click)
-                self.view.restart_btn.bind("<Button-1>", self.restart_game)
+        self.view.restart_btn.bind("<Button-1>", self.restart_game)
+        self.view.simulate_btn.bind("<Button-1>", self.toggle_simulate)

@@ -36,12 +36,16 @@ def handle_cl_args(params):
         params['list_moves'] = False
 
 
-if __name__ == '__main__':
+def main():
     params = {'agent': None, 'list_moves': False}
     handle_cl_args(params)
     root = tk.Tk()
     app = Controller(root, params)
     app.bind_actions()
-    root.geometry('600x378') 
+    root.geometry('600x378')
     root.title('Tic Tac Katsu')
     root.mainloop()
+
+
+if __name__ == '__main__':
+    main()

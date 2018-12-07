@@ -1,5 +1,5 @@
 import tkinter as tk
-from .coord import Coord
+from GameMVC import Coord
 
 class View(tk.Frame):
     def __init__(self, parent):
@@ -12,20 +12,23 @@ class View(tk.Frame):
         self.p2_colors = ('RoyalBlue1', 'SlateBlue3')
         self.invalid_colors = ('gray15', 'gray10')
 
-        #creating game board interface
+        # creating game board interface
         self.board_spaces = [[tk.Label(self, text=chr(65+i)+str(j), font='Courier', bg=(self.colors[0] if i%2==0 else self.colors[1]), width=4, height=2) for j in range(9)] for i in range(9)]
         for i in range(9):
             for j in range(9):
-                #calculation of converted row idx
+                # calculation of converted row idx
                 k = (6 if i > 5 else (3 if i > 2 else 0)) + (2 if j > 5 else (1 if j > 2 else 0))
-                #calculation of converted col idx
+                # calculation of converted col idx
                 l = 3*(i%3) + (j%3)
                 self.board_spaces[i][j].grid(row=k, column=l)
                 
-        #placing restart button
+        # placing restart button
         self.restart_btn = tk.Button(self, text='Restart')
         self.restart_btn.grid(row=1, column=9, padx=10)
 
+        # placing simulation button
+        self.simulate_btn = tk.Button(self, text='Simulate')
+        self.simulate_btn.grid(row=3, column=9, padx=10)
 
     def reset_board(self):
         for i in range(9):
@@ -34,7 +37,6 @@ class View(tk.Frame):
                 if i%2 == 0:
                     color_idx = 0
                 self.board_spaces[i][j].configure(bg=self.colors[color_idx])
-
 
     def update_visuals(self, coord, player):
         def get_active_board_tile(coord):

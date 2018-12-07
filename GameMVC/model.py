@@ -6,7 +6,7 @@ class Engine():
         self.master_board = [None for i in range(9)] # contains the win states of all other boards
         self.prev_move = Coord(None, None)
         self.player = 1
-        self.game_state = 0
+        self.game_state = None
 
     @staticmethod
     def check_board_win(board):
@@ -38,8 +38,8 @@ class Engine():
                 return True
             return False
         
-        if player_won():
-            self.game_state = self.player
+        if player_won() or len(self.get_valid_moves()) == 0:
+            self.game_state = 1 if self.player == 1 else -1 if self.player == 2 else 0
 
     def check_valid_move(self, curr_move):
         if curr_move is None:
@@ -84,4 +84,4 @@ class Engine():
         self.master_board = [None for i in range(9)]
         self.prev_move = Coord(None, None)
         self.player = 1
-        self.game_state = 0
+        self.game_state = None
