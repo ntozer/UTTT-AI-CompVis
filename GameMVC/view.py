@@ -28,7 +28,11 @@ class View(tk.Frame):
 
         # placing simulation button
         self.simulate_btn = tk.Button(self, text='Simulate')
-        self.simulate_btn.grid(row=3, column=9, padx=10)
+        self.simulate_btn.grid(row=2, column=9, padx=10)
+        # placing simulation count box
+        self.simulate_txt = tk.Text(self, height=1, width=10)
+        self.simulate_txt.insert('end', '100000')
+        self.simulate_txt.grid(row=3, column=9, padx=10)
 
     def reset_board(self):
         for i in range(9):

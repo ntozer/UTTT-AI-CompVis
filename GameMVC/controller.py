@@ -1,6 +1,6 @@
 from GameMVC import *
 from GameAgents import *
-import time
+import pickle
 
 
 class Controller():
@@ -8,7 +8,10 @@ class Controller():
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.agent = MonteCarloAgent()
+        try:
+            self.agent = pickle.load(open('GameAgents/SavedAgents/MonteCarloAgent.p', 'rb'))
+        except FileNotFoundError:
+            self.agent = MonteCarloAgent()
         self.list_moves = params['list_moves']
         self.write_moves = False
         self.move_list = []
@@ -73,21 +76,26 @@ class Controller():
     def restart_game(self, event=None):
         self.model.reset_game()
         self.view.reset_board()
+        self.agent.reset_agent('Play')
 
-    def toggle_simulate(self, event):
-        if not self.simulate:
-            self.simulate = True
-            self.run_simulations()
-        else:
-            self.simulate = False
+    def simulation_restart(self):
+        self.model.reset_game()
+        self.view.reset_board()
+        self.agent.reset_agent('Selection')
 
-    def run_simulations(self):
-        while True:
+    def run_simulations(self, event):
+        self.simulate = True
+        sim_count = 0
+        max_sim = int(self.view.simulate_txt.get('1.0', 'end-1c'))
+        while sim_count < max_sim:
+            self.agent.phase = 'Selection'
             while self.model.game_state is None:
                 self.make_agent_move()
             self.agent.update(self.model.game_state)
-            self.agent.reset_agent()
-            self.restart_game()
+            self.simulation_restart()
+            if self.agent.total_sims % 10000 == 0:
+                pickle.dump(self.agent, open('GameAgents/SavedAgents/MonteCarloAgent.p', 'wb'))
+            sim_count += 1
 
     def bind_actions(self):
         for i in range(9):
@@ -96,4 +104,4 @@ class Controller():
                 self.view.board_spaces[i][j].bind("<Leave>", self.handle_leave)
                 self.view.board_spaces[i][j].bind("<Button-1>", self.handle_click)
         self.view.restart_btn.bind("<Button-1>", self.restart_game)
-        self.view.simulate_btn.bind("<Button-1>", self.toggle_simulate)
+        self.view.simulate_btn.bind("<Button-1>", self.run_simulations)

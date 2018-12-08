@@ -21,24 +21,21 @@ class MonteCarloAgent(Agent):
         self.cur_node = self.tree_root
         self.total_sims = 0
         self.c = confidence
-        self.phase = 'Selection'
+        self.phase = 'Play'
 
     # Upper Confidence Bound 1 applied to Trees (UCT)
     def uct(self, node):
-        try:
-            return node.value / node.plays + self.c * sqrt(log(self.total_sims) / node.plays)
-        except ZeroDivisionError:
-            return node.value / 1 + self.c * sqrt(log(self.total_sims) / 1)
+        return node.value / node.plays + self.c * sqrt(log(node.parent.plays) / node.plays)
 
     def select(self, last_move, valid_moves):
-        if len(self.cur_node.children) == 0:
+        if len(self.cur_node.children) != len(valid_moves):
             return self.expand(valid_moves)
 
         if last_move.x is not None and self.cur_node.move != last_move:
             for child in self.cur_node.children:
                 if child.move == last_move:
                     self.cur_node = child
-            if len(self.cur_node.children) == 0:
+            if len(self.cur_node.children) != len(valid_moves):
                 return self.expand(valid_moves)
 
         max_child = self.cur_node.children[0]
@@ -51,12 +48,18 @@ class MonteCarloAgent(Agent):
         return self.cur_node.move
 
     def expand(self, valid_moves):
-        for move in valid_moves:
-            child = Node(parent=self.cur_node)
-            child.move = move
-            child.depth = self.cur_node.depth + 1
-            self.cur_node.children.append(child)
-        self.cur_node = self.cur_node.children[randrange(0, len(self.cur_node.children))]
+        move = None
+        if len(self.cur_node.children) == 0:
+            move = valid_moves[randrange(0, len(valid_moves))]
+        else:
+            while move in list(map(lambda node: node.move, self.cur_node.children)) or move is None:
+                move = valid_moves[randrange(0, len(valid_moves))]
+
+        child = Node(parent=self.cur_node)
+        child.move = move
+        child.depth = self.cur_node.depth + 1
+        self.cur_node.children.append(child)
+        self.cur_node = child
         self.phase = 'Simulation'
         return self.cur_node.move
 
@@ -93,8 +96,8 @@ class MonteCarloAgent(Agent):
         self.cur_node = max_child
         return self.cur_node.move
 
-    def reset_agent(self):
-        self.phase = 'Selection'
+    def reset_agent(self, phase):
+        self.phase = phase
         self.cur_node = self.tree_root
 
     def compute_next_move(self, valid_moves, last_move):

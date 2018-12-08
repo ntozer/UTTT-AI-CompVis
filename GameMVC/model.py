@@ -38,8 +38,10 @@ class Engine():
                 return True
             return False
         
-        if player_won() or len(self.get_valid_moves()) == 0:
-            self.game_state = 1 if self.player == 1 else -1 if self.player == 2 else 0
+        if player_won():
+            self.game_state = 1 if self.player == 1 else -1
+        elif len(self.get_valid_moves()) == 0:
+            self.game_state = 0
 
     def check_valid_move(self, curr_move):
         if curr_move is None:
