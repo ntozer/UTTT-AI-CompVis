@@ -8,10 +8,7 @@ class Controller():
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        try:
-            self.agent = pickle.load(open('GameAgents/SavedAgents/MonteCarloAgent.p', 'rb'))
-        except FileNotFoundError:
-            self.agent = MonteCarloAgent()
+        self.agent = None
         self.list_moves = params['list_moves']
         self.write_moves = False
         self.move_list = []
