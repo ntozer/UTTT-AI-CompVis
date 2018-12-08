@@ -81,18 +81,18 @@ class MonteCarloAgent(Agent):
             self.cur_node = self.cur_node.parent
 
     def play(self, last_move):
-        if last_move.x is not None and self.cur_node.move != last_move:
-            for child in self.cur_node.children:
-                if child.move == last_move:
-                    self.cur_node = child
+        print(last_move.x, last_move.y)
+        for child in self.cur_node.children:
+            if child.move.x == last_move.x and child.move.y == last_move.y:
+                self.cur_node = child
 
-        max_child = self.cur_node.children[0]
-        max_wr = max_child.value / max_child.plays
+        max_child = None
+        max_wr = 0
         for child in self.cur_node.children:
             if (child.value / child.plays) > max_wr:
                 max_wr = child.value / child.plays
                 max_child = child
-                print('Best Move: ({}, {})\t Win Rate: {}'.format(child.move.x, child.move.y, max_wr))
+        print('Best Move: ({}, {})\t Win Rate: {}'.format(max_child.move.x, max_child.move.y, max_wr))
         self.cur_node = max_child
         return self.cur_node.move
 
@@ -107,4 +107,4 @@ class MonteCarloAgent(Agent):
             elif self.phase == 'Simulation':
                 return self.simulate(valid_moves)
         else:
-            self.play(last_move)
+            return self.play(last_move)

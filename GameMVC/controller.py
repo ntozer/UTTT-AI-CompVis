@@ -46,6 +46,7 @@ class Controller():
                     print(self.move_list)
 
         if self.model.player == 2 and not self.simulate:
+            print(self.model.player)
             self.make_agent_move()
 
     def make_agent_move(self):
@@ -77,6 +78,7 @@ class Controller():
         self.model.reset_game()
         self.view.reset_board()
         self.agent.reset_agent('Play')
+        self.simulate = False
 
     def simulation_restart(self):
         self.model.reset_game()
