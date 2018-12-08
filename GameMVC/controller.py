@@ -8,7 +8,7 @@ class Controller():
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.agent = None
+        self.agent = MinimaxAgent(self.model)
         self.list_moves = params['list_moves']
         self.write_moves = False
         self.move_list = []
@@ -42,9 +42,11 @@ class Controller():
                 if self.model.game_state is not None:
                     print(self.move_list)
 
-        if self.model.player == 2 and not self.simulate:
-            print(self.model.player)
-            self.make_agent_move()
+        print(f'Current Board Value: {self.agent.compute_position_value()}')
+        # TODO make agent moves from inside the agent class
+        #if self.model.player == 2 and not self.simulate:
+        #   print(self.model.player)
+        #    self.make_agent_move()
 
     def make_agent_move(self):
         move = self.agent.compute_next_move(self.model.get_valid_moves(), self.model.prev_move)
