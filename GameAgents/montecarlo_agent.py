@@ -1,8 +1,7 @@
 from .agent import Agent
 from math import sqrt, log
 from random import randrange
-# TODO use pickle to store decision tree
-import pickle
+from copy import deepcopy
 
 
 class Node:
@@ -16,12 +15,14 @@ class Node:
 
 
 class MonteCarloAgent(Agent):
-    def __init__(self, confidence=sqrt(2)):
+    def __init__(self, engine, confidence=sqrt(2)):
         self.tree_root = Node()
         self.cur_node = self.tree_root
         self.total_sims = 0
         self.c = confidence
         self.phase = 'Play'
+        self.engine = engine
+        self.max_sim = 500
 
     # Upper Confidence Bound 1 applied to Trees (UCT)
     def uct(self, node):
@@ -108,3 +109,18 @@ class MonteCarloAgent(Agent):
                 return self.simulate(valid_moves)
         else:
             return self.play(last_move)
+
+    def simulation_restart(self):
+        self.model.reset_game()
+        self.agent.reset_agent('Selection')
+
+    def run_simulations(self):
+        sim_count = 0
+        while sim_count < self.max_sim:
+            self.simulation_restart()
+            engine_copy = deepcopy(self.engine)
+            while self.engine.game_state is None:
+                move = self.compute_next_move(engine_copy.get_valid_moves(), engine_copy.prev_move)
+                engine_copy.make_move(move)
+            self.update(self.model.game_state)
+        self.reset_agent('Play')

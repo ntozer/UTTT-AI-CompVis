@@ -18,21 +18,9 @@ class Controller():
         x = ord(event.widget['text'][0]) - 65
         y = int(event.widget['text'][1])
         move = Coord(x, y)
-        self.make_move(move)
-
-    def make_move(self, move):
-        if self.model.check_valid_move(move):
-            # movement updates
-            self.model.board[move.x][move.y] = self.model.player
-            self.model.prev_move = move
-            # game state updates
-            self.model.update_master_board()
-            self.model.update_game_state()
-            # update visuals
+        if self.model.make_move(move) is not None:
             self.view.update_visuals(move, self.model.player)
-            # player updates
-            self.model.update_player()
-            
+
             # output and record moves
             move_code = chr(move.x + 97) + str(move.y)
             if self.list_moves:
@@ -67,30 +55,9 @@ class Controller():
         elif event.widget['bg'] in [self.view.valid_colors[1], self.view.invalid_colors[1]]:
             event.widget.configure(bg=self.view.colors[1])
 
-    def restart_game(self, event=None):
+    def restart_game(self, event):
         self.model.reset_game()
         self.view.reset_board()
-        self.agent.reset_agent('Play')
-        self.simulate = False
-
-    def simulation_restart(self):
-        self.model.reset_game()
-        self.view.reset_board()
-        self.agent.reset_agent('Selection')
-
-    def run_simulations(self, event):
-        self.simulate = True
-        sim_count = 0
-        max_sim = int(self.view.simulate_txt.get('1.0', 'end-1c'))
-        while sim_count < max_sim:
-            self.agent.phase = 'Selection'
-            while self.model.game_state is None:
-                self.make_agent_move()
-            self.agent.update(self.model.game_state)
-            self.simulation_restart()
-            if self.agent.total_sims % 10000 == 0:
-                pickle.dump(self.agent, open('GameAgents/SavedAgents/MonteCarloAgent.p', 'wb'))
-            sim_count += 1
 
     def bind_actions(self):
         for i in range(9):

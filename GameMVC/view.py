@@ -61,6 +61,14 @@ class View(tk.Frame):
             else:
                 active_tile.configure(bg=self.p2_colors[color_idx])
 
+    def popup_msg(self, msg):
+        popup = tk.Tk()
+        popup.wm_title()
+        label = tk.Label(popup, text=msg)
+        label.pack(side='top', fill='x', pady=10)
+        btn = tk.Button(popup, text='Okay', command=popup.destroy)
+        btn.pack()
+        popup.mainloop()
 
 if __name__ == "__main__":
     root = tk.Tk()

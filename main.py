@@ -42,7 +42,7 @@ def main():
     root = tk.Tk()
     app = Controller(root, params)
     app.bind_actions()
-    root.geometry('510x378')
+    root.geometry('396x378')
     root.title('Tic Tac Katsu')
     root.mainloop()
 

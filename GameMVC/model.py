@@ -1,11 +1,12 @@
 from .coord import Coord
 
-class Engine():
+
+class Engine:
     def __init__(self):
         self.board = [[None for i in range(9)] for j in range(9)]
         self.master_board = [None for i in range(9)] # contains the win states of all other boards
         self.prev_move = Coord(None, None)
-        self.player = 1
+        self.player = None
         self.game_state = None
 
     @staticmethod
@@ -81,9 +82,21 @@ class Engine():
         else:
             self.player = 1
 
+    def make_move(self, move):
+        if self.check_valid_move(move):
+            self.update_player()
+            # movement updates
+            self.board[move.x][move.y] = self.player
+            self.prev_move = move
+            # game state updates
+            self.update_master_board()
+            self.update_game_state()
+            return 1
+        return None
+
     def reset_game(self):
         self.board = [[None for i in range(9)] for j in range(9)]
         self.master_board = [None for i in range(9)]
         self.prev_move = Coord(None, None)
-        self.player = 1
+        self.player = None
         self.game_state = None
