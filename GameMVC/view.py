@@ -34,6 +34,10 @@ class View(tk.Frame):
         self.simulate_txt.insert('end', '100000')
         self.simulate_txt.grid(row=3, column=9, padx=10)
 
+        # placing AI make move button
+        self.ai_move_btn = tk.Button(self, text='AI Move')
+        self.ai_move_btn.grid(row=4, column=9, padx=10)
+
     def reset_board(self):
         for i in range(9):
             for j in range(9):

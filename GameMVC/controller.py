@@ -42,14 +42,8 @@ class Controller():
                 if self.model.game_state is not None:
                     print(self.move_list)
 
-        print(f'Current Board Value: {self.agent.compute_position_value()}')
-        # TODO make agent moves from inside the agent class
-        #if self.model.player == 2 and not self.simulate:
-        #   print(self.model.player)
-        #    self.make_agent_move()
-
-    def make_agent_move(self):
-        move = self.agent.compute_next_move(self.model.get_valid_moves(), self.model.prev_move)
+    def make_agent_move(self, event):
+        move = self.agent.compute_next_move()
         self.make_move(move)
 
     def handle_enter(self, event):
@@ -106,3 +100,4 @@ class Controller():
                 self.view.board_spaces[i][j].bind("<Button-1>", self.handle_click)
         self.view.restart_btn.bind("<Button-1>", self.restart_game)
         self.view.simulate_btn.bind("<Button-1>", self.run_simulations)
+        self.view.ai_move_btn.bind("<Button-1>", self.make_agent_move)
