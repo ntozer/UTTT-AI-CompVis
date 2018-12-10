@@ -15,29 +15,25 @@ class Node:
 
 
 class MonteCarloAgent(Agent):
-    def __init__(self, engine, confidence=sqrt(2)):
+    def __init__(self, engine, max_sim=2000, confidence=sqrt(2)):
         self.tree_root = Node()
         self.cur_node = self.tree_root
         self.total_sims = 0
         self.c = confidence
-        self.phase = 'Play'
+        self.phase = None
         self.engine = engine
-        self.max_sim = 500
+        self.max_sim = max_sim
 
     # Upper Confidence Bound 1 applied to Trees (UCT)
     def uct(self, node):
         return node.value / node.plays + self.c * sqrt(log(node.parent.plays) / node.plays)
 
-    def select(self, last_move, valid_moves):
+    def children_moves(self, node):
+        return list(map(lambda child: child.move, node.children))
+
+    def select(self, valid_moves):
         if len(self.cur_node.children) != len(valid_moves):
             return self.expand(valid_moves)
-
-        if last_move.x is not None and self.cur_node.move != last_move:
-            for child in self.cur_node.children:
-                if child.move == last_move:
-                    self.cur_node = child
-            if len(self.cur_node.children) != len(valid_moves):
-                return self.expand(valid_moves)
 
         max_child = self.cur_node.children[0]
         max_uct = self.uct(max_child)
@@ -53,7 +49,7 @@ class MonteCarloAgent(Agent):
         if len(self.cur_node.children) == 0:
             move = valid_moves[randrange(0, len(valid_moves))]
         else:
-            while move in list(map(lambda node: node.move, self.cur_node.children)) or move is None:
+            while move in self.children_moves(self.cur_node) or move is None:
                 move = valid_moves[randrange(0, len(valid_moves))]
 
         child = Node(parent=self.cur_node)
@@ -69,7 +65,7 @@ class MonteCarloAgent(Agent):
 
     # -1 -> loss, 0 -> tie, 1 -> win
     def update(self, game_result):
-        print(f'Simulation #{self.total_sims}\t\tResult: {game_result}\t\tTree Depth Achieved: {self.cur_node.depth}')
+        print(f'Simulation #{self.total_sims}\t\tResult: {game_result}\t\tTree Depth Achieved: {self.cur_node.depth}\t\tThink Ahead: {self.cur_node.depth - self.tree_root.depth}')
         self.total_sims += 1
         while self.cur_node is not None:
             self.cur_node.plays += 1
@@ -81,46 +77,55 @@ class MonteCarloAgent(Agent):
                 self.cur_node.value += 1
             self.cur_node = self.cur_node.parent
 
-    def play(self, last_move):
-        print(last_move.x, last_move.y)
-        for child in self.cur_node.children:
-            if child.move.x == last_move.x and child.move.y == last_move.y:
-                self.cur_node = child
-
+    def play(self):
         max_child = None
-        max_wr = 0
+        max_avg_val = 0
         for child in self.cur_node.children:
-            if (child.value / child.plays) > max_wr:
-                max_wr = child.value / child.plays
+            child_avg_val = (child.value / child.plays)
+            if child_avg_val > max_avg_val:
+                max_avg_val = child_avg_val
                 max_child = child
-        print('Best Move: ({}, {})\t Win Rate: {}'.format(max_child.move.x, max_child.move.y, max_wr))
-        self.cur_node = max_child
-        return self.cur_node.move
+        print(f'Best Move: {chr(max_child.move.x + 97)}{max_child.move.y}, Val/Plays: {max_avg_val}')
+        self.tree_root = max_child
+        self.tree_root.parent = None
+        return self.tree_root.move
 
-    def reset_agent(self, phase):
+    def reset_agent(self, phase=None):
         self.phase = phase
         self.cur_node = self.tree_root
 
-    def compute_next_move(self, valid_moves, last_move):
-        if self.phase != 'Play':
-            if self.phase == 'Selection':
-                return self.select(last_move, valid_moves)
-            elif self.phase == 'Simulation':
-                return self.simulate(valid_moves)
-        else:
-            return self.play(last_move)
+    def update_tree_root(self):
+        if self.cur_node.move != self.engine.prev_move and self.engine.prev_move.x is not None:
+            if self.engine.prev_move not in self.children_moves(self.cur_node):
+                node = Node()
+                node.depth = self.cur_node.depth + 1
+                node.move = self.engine.prev_move
+                self.tree_root = node
+            else:
+                for child in self.cur_node.children:
+                    if child.move == self.engine.prev_move:
+                        self.tree_root = child
+                        self.tree_root.parent = None
 
-    def simulation_restart(self):
-        self.model.reset_game()
-        self.agent.reset_agent('Selection')
+    def compute_next_move(self):
+        self.update_tree_root()
+        self.run_simulations()
+        return self.play()
+
+    def get_simulation_move(self, valid_moves, last_move):
+        if self.phase == 'Selection':
+            return self.select(valid_moves)
+        elif self.phase == 'Simulation':
+            return self.simulate(valid_moves)
 
     def run_simulations(self):
         sim_count = 0
         while sim_count < self.max_sim:
-            self.simulation_restart()
+            sim_count += 1
             engine_copy = deepcopy(self.engine)
-            while self.engine.game_state is None:
-                move = self.compute_next_move(engine_copy.get_valid_moves(), engine_copy.prev_move)
+            self.reset_agent('Selection')
+            while engine_copy.game_state is None:
+                move = self.get_simulation_move(engine_copy.get_valid_moves(), engine_copy.prev_move)
                 engine_copy.make_move(move)
-            self.update(self.model.game_state)
-        self.reset_agent('Play')
+            self.update(engine_copy.game_state)
+        self.reset_agent()

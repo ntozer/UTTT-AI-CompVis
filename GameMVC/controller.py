@@ -1,18 +1,24 @@
 from GameMVC import *
 from GameAgents import *
-import pickle
 
 
-class Controller():
+class Controller:
     def __init__(self, root, params):
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.agent = MinimaxAgent(self.model)
+        self.agent = MonteCarloAgent(self.model)
         self.list_moves = params['list_moves']
         self.write_moves = False
         self.move_list = []
         self.simulate = False
+
+    def check_game_over(self):
+        if self.model.game_state is not None:
+            if self.model.game_state != 0:
+                self.view.popup_msg(f'Player {self.model.player} won')
+            else:
+                self.view.popup_msg('The game ended in a draw')
 
     def handle_click(self, event):
         x = ord(event.widget['text'][0]) - 65
@@ -20,7 +26,7 @@ class Controller():
         move = Coord(x, y)
         if self.model.make_move(move) is not None:
             self.view.update_visuals(move, self.model.player)
-
+            self.check_game_over()
             # output and record moves
             move_code = chr(move.x + 97) + str(move.y)
             if self.list_moves:
@@ -30,9 +36,11 @@ class Controller():
                 if self.model.game_state is not None:
                     print(self.move_list)
 
-    def make_agent_move(self, event):
+    def handle_agent_move(self, event=None):
         move = self.agent.compute_next_move()
-        self.make_move(move)
+        self.model.make_move(move)
+        self.view.update_visuals(move, self.model.player)
+        self.check_game_over()
 
     def handle_enter(self, event):
         x = ord(event.widget['text'][0]) - 65
@@ -58,6 +66,7 @@ class Controller():
     def restart_game(self, event):
         self.model.reset_game()
         self.view.reset_board()
+        self.agent = MonteCarloAgent(self.model)
 
     def bind_actions(self):
         for i in range(9):
@@ -66,5 +75,4 @@ class Controller():
                 self.view.board_spaces[i][j].bind("<Leave>", self.handle_leave)
                 self.view.board_spaces[i][j].bind("<Button-1>", self.handle_click)
         self.view.restart_btn.bind("<Button-1>", self.restart_game)
-        self.view.simulate_btn.bind("<Button-1>", self.run_simulations)
-        self.view.ai_move_btn.bind("<Button-1>", self.make_agent_move)
+        self.view.ai_move_btn.bind("<Button-1>", self.handle_agent_move)
