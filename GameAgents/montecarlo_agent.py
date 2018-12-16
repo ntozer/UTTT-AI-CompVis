@@ -7,6 +7,7 @@ from copy import deepcopy
 class Node:
     def __init__(self, parent=None):
         self.move = None
+        self.player = None
         self.parent = parent
         self.children = []
         self.plays = 0
@@ -15,7 +16,7 @@ class Node:
 
 
 class MonteCarloAgent(Agent):
-    def __init__(self, engine, max_sim=2000, confidence=sqrt(2)):
+    def __init__(self, engine, max_sim=10000, confidence=sqrt(2)):
         self.tree_root = Node()
         self.cur_node = self.tree_root
         self.total_sims = 0
@@ -55,6 +56,7 @@ class MonteCarloAgent(Agent):
         child = Node(parent=self.cur_node)
         child.move = move
         child.depth = self.cur_node.depth + 1
+        child.player = 1 if child.parent.player == 2 else 2
         self.cur_node.children.append(child)
         self.cur_node = child
         self.phase = 'Simulation'
@@ -65,15 +67,15 @@ class MonteCarloAgent(Agent):
 
     # -1 -> loss, 0 -> tie, 1 -> win
     def update(self, game_result):
-        print(f'Simulation #{self.total_sims}\t\tResult: {game_result}\t\tTree Depth Achieved: {self.cur_node.depth}\t\tThink Ahead: {self.cur_node.depth - self.tree_root.depth}')
+        print(f'Simulation #{self.total_sims}\t\tResult: {game_result}\t\tTree Depth Achieved: {self.cur_node.depth}')
         self.total_sims += 1
         while self.cur_node is not None:
             self.cur_node.plays += 1
             if game_result == 0:
                 self.cur_node.value += 0.5
-            elif game_result == 1 and self.cur_node.depth % 2 == 1:
+            elif game_result == 1 and self.cur_node.player == 1:
                 self.cur_node.value += 1
-            elif game_result == -1 and self.cur_node.depth % 2 == 0:
+            elif game_result == -1 and self.cur_node.player == 2:
                 self.cur_node.value += 1
             self.cur_node = self.cur_node.parent
 
@@ -107,12 +109,18 @@ class MonteCarloAgent(Agent):
                         self.tree_root = child
                         self.tree_root.parent = None
 
+    def reset_tree(self):
+        self.tree_root = Node()
+        self.tree_root.player = self.engine.player
+        self.cur_node = self.tree_root
+
     def compute_next_move(self):
-        self.update_tree_root()
+        # self.update_tree_root()
+        self.reset_tree()
         self.run_simulations()
         return self.play()
 
-    def get_simulation_move(self, valid_moves, last_move):
+    def get_simulation_move(self, valid_moves):
         if self.phase == 'Selection':
             return self.select(valid_moves)
         elif self.phase == 'Simulation':
@@ -125,7 +133,7 @@ class MonteCarloAgent(Agent):
             engine_copy = deepcopy(self.engine)
             self.reset_agent('Selection')
             while engine_copy.game_state is None:
-                move = self.get_simulation_move(engine_copy.get_valid_moves(), engine_copy.prev_move)
+                move = self.get_simulation_move(engine_copy.get_valid_moves())
                 engine_copy.make_move(move)
             self.update(engine_copy.game_state)
         self.reset_agent()
