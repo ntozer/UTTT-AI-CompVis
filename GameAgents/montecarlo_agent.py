@@ -1,4 +1,4 @@
-from .agent import Agent
+from GameAgents import Agent
 from math import sqrt, log
 from random import randrange
 from copy import deepcopy
@@ -16,7 +16,7 @@ class Node:
 
 
 class MonteCarloAgent(Agent):
-    def __init__(self, engine, max_sim=10000, confidence=sqrt(2)):
+    def __init__(self, engine, max_sim=500, confidence=sqrt(2)):
         self.tree_root = Node()
         self.cur_node = self.tree_root
         self.total_sims = 0
@@ -30,7 +30,7 @@ class MonteCarloAgent(Agent):
         return node.value / node.plays + self.c * sqrt(log(node.parent.plays) / node.plays)
 
     def children_moves(self, node):
-        return list(map(lambda child: child.move, node.children))
+        return list(map(lambda child: (child.move.x, child.move.y), node.children))
 
     def select(self, valid_moves):
         if len(self.cur_node.children) != len(valid_moves):
@@ -50,7 +50,7 @@ class MonteCarloAgent(Agent):
         if len(self.cur_node.children) == 0:
             move = valid_moves[randrange(0, len(valid_moves))]
         else:
-            while move in self.children_moves(self.cur_node) or move is None:
+            while move is None or (move.x, move.y) in self.children_moves(self.cur_node):
                 move = valid_moves[randrange(0, len(valid_moves))]
 
         child = Node(parent=self.cur_node)
@@ -67,7 +67,7 @@ class MonteCarloAgent(Agent):
 
     # -1 -> loss, 0 -> tie, 1 -> win
     def update(self, game_result):
-        print(f'Simulation #{self.total_sims}\t\tResult: {game_result}\t\tTree Depth Achieved: {self.cur_node.depth}')
+        # print(f'Simulation #{self.total_sims}\t\tResult: {game_result}\t\tTree Depth Achieved: {self.cur_node.depth}')
         self.total_sims += 1
         while self.cur_node is not None:
             self.cur_node.plays += 1
@@ -115,8 +115,8 @@ class MonteCarloAgent(Agent):
         self.cur_node = self.tree_root
 
     def compute_next_move(self):
-        # self.update_tree_root()
-        self.reset_tree()
+        self.update_tree_root()
+        # self.reset_tree()
         self.run_simulations()
         return self.play()
 
