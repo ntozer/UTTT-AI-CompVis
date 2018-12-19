@@ -7,7 +7,8 @@ class Controller:
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.agent = MonteCarloAgent(self.model)
+        self.player1 = MonteCarloAgent(engine=self.model)
+        self.player2 = MonteCarloAgent(engine=self.model)
         self.list_moves = params['list_moves']
         self.write_moves = False
         self.move_list = []
@@ -19,6 +20,14 @@ class Controller:
                 self.view.popup_msg(f'Player {self.model.player} won')
             else:
                 self.view.popup_msg('The game ended in a draw')
+
+    def handle_next_move(self):
+        if self.model.player == 1 or self.model.player is None:
+            if self.player1 is not None:
+                self.handle_agent_move(agent=self.player1)
+        elif self.model.player == 2:
+            if self.player2 is not None:
+                self.handle_agent_move(agent=self.player2)
 
     def handle_click(self, event):
         x = ord(event.widget['text'][0]) - 65
@@ -35,12 +44,14 @@ class Controller:
                 self.move_list.append(move_code)
                 if self.model.game_state is not None:
                     print(self.move_list)
+        self.view.after(500, self.handle_next_move)
 
-    def handle_agent_move(self, event=None):
-        move = self.agent.compute_next_move()
+    def handle_agent_move(self, agent, event=None):
+        move = agent.compute_next_move()
         self.model.make_move(move)
         self.view.update_visuals(move, self.model.player)
         self.check_game_over()
+        self.view.after(250, self.handle_next_move)
 
     def handle_enter(self, event):
         x = ord(event.widget['text'][0]) - 65
@@ -66,7 +77,8 @@ class Controller:
     def restart_game(self, event):
         self.model.reset_game()
         self.view.reset_board()
-        self.agent = MonteCarloAgent(self.model)
+        self.player1 = MonteCarloAgent(self.model)
+        self.player2 = MonteCarloAgent(self.model)
 
     def bind_actions(self):
         for i in range(9):

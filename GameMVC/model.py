@@ -4,7 +4,7 @@ from .coord import Coord
 class Engine:
     def __init__(self):
         self.board = [[None for i in range(9)] for j in range(9)]
-        self.master_board = [None for i in range(9)] # contains the win states of all other boards
+        self.master_board = [None for i in range(9)]  # contains the win states of all mini boards
         self.prev_move = Coord(None, None)
         self.player = None
         self.game_state = None
