@@ -1,4 +1,5 @@
 import tkinter as tk
+from GameMVC import Coord
 
 
 class View(tk.Frame):
@@ -16,27 +17,17 @@ class View(tk.Frame):
         self.board_spaces = [[tk.Label(self, text=chr(65+i)+str(j), font='Courier', bg=(self.colors[0] if i%2==0 else self.colors[1]), width=4, height=2) for j in range(9)] for i in range(9)]
         for i in range(9):
             for j in range(9):
-                # calculation of converted row idx
-                k = (6 if i > 5 else (3 if i > 2 else 0)) + (2 if j > 5 else (1 if j > 2 else 0))
-                # calculation of converted col idx
-                l = 3 * (i % 3) + (j % 3)
+                k, l = self.convert_board_index(i, j)
                 self.board_spaces[i][j].grid(row=k, column=l)
                 
-        # placing restart button
-        self.restart_btn = tk.Button(self, text='Restart')
-        self.restart_btn.grid(row=1, column=9, padx=10)
+        # self.menubar = tk.Menu(self)
 
-        # placing simulation button
-        self.simulate_btn = tk.Button(self, text='Simulate')
-        self.simulate_btn.grid(row=2, column=9, padx=10)
-        # placing simulation count box
-        self.simulate_txt = tk.Text(self, height=1, width=10)
-        self.simulate_txt.insert('end', '100000')
-        self.simulate_txt.grid(row=3, column=9, padx=10)
-
-        # placing AI make move button
-        self.ai_move_btn = tk.Button(self, text='AI Move')
-        self.ai_move_btn.grid(row=4, column=9, padx=10)
+    def convert_board_index(self, i, j):
+        # calculation of converted row idx
+        k = (6 if i > 5 else (3 if i > 2 else 0)) + (2 if j > 5 else (1 if j > 2 else 0))
+        # calculation of converted col idx
+        l = 3 * (i % 3) + (j % 3)
+        return k, l
 
     def reset_board(self):
         for i in range(9):
@@ -47,11 +38,7 @@ class View(tk.Frame):
                 self.board_spaces[i][j].configure(bg=self.colors[color_idx])
 
     def update_visuals(self, coord, player):
-        def get_active_board_tile(coord):
-            return self.board_spaces[coord.x][coord.y]
-
-        active_tile = get_active_board_tile(coord)
-
+        active_tile = self.board_spaces[coord.x][coord.y]
         if active_tile['bg'] not in self.p1_colors and active_tile['bg'] not in self.p2_colors:
             color_idx = 1
             if active_tile['bg'] == self.valid_colors[0] or active_tile['bg'] == self.colors[0]:
@@ -60,6 +47,14 @@ class View(tk.Frame):
                 active_tile.configure(bg=self.p1_colors[color_idx])
             else:
                 active_tile.configure(bg=self.p2_colors[color_idx])
+
+    def render_board(self, board):
+        for i in range(len(board)):
+            for j in range(len(board[i])):
+                if board[i][j] is not None:
+                    coord = Coord(i, j)
+                    player = board[i][j]
+                    self.update_visuals(coord, player)
 
     def popup_msg(self, msg):
         popup = tk.Tk()

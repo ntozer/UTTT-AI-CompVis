@@ -3,16 +3,16 @@ from GameAgents import *
 
 
 class Controller:
-    def __init__(self, root, params):
+    def __init__(self, root):
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.player1 = MonteCarloAgent(engine=self.model)
-        self.player2 = MonteCarloAgent(engine=self.model)
-        self.list_moves = params['list_moves']
+        self.player1 = None
+        self.player2 = MinimaxAgent(engine=self.model)
         self.write_moves = False
         self.move_list = []
         self.simulate = False
+        self.delay = 1000
 
     def check_game_over(self):
         if self.model.game_state is not None:
@@ -22,10 +22,10 @@ class Controller:
                 self.view.popup_msg('The game ended in a draw')
 
     def handle_next_move(self):
-        if self.model.player == 1 or self.model.player is None:
+        if self.model.player == 2 or self.model.player is None:
             if self.player1 is not None:
                 self.handle_agent_move(agent=self.player1)
-        elif self.model.player == 2:
+        elif self.model.player == 1:
             if self.player2 is not None:
                 self.handle_agent_move(agent=self.player2)
 
@@ -33,25 +33,28 @@ class Controller:
         x = ord(event.widget['text'][0]) - 65
         y = int(event.widget['text'][1])
         move = Coord(x, y)
-        if self.model.make_move(move) is not None:
-            self.view.update_visuals(move, self.model.player)
-            self.check_game_over()
-            # output and record moves
-            move_code = chr(move.x + 97) + str(move.y)
-            if self.list_moves:
-                print(move_code)
-            if self.write_moves:
-                self.move_list.append(move_code)
-                if self.model.game_state is not None:
-                    print(self.move_list)
-        self.view.after(500, self.handle_next_move)
+        if self.model.check_valid_move(move):
+            self.handle_move(move)
 
     def handle_agent_move(self, agent, event=None):
         move = agent.compute_next_move()
+        self.handle_move(move)
+
+    def handle_move(self, move):
         self.model.make_move(move)
-        self.view.update_visuals(move, self.model.player)
+        self.view.render_board(self.model.board)
         self.check_game_over()
-        self.view.after(250, self.handle_next_move)
+        self.view.after(self.delay, self.handle_next_move)
+
+    def output_move(self, move):
+        # output and record moves
+        move_code = chr(move.x + 97) + str(move.y)
+        if self.list_moves:
+            print(move_code)
+        if self.write_moves:
+            self.move_list.append(move_code)
+            if self.model.game_state is not None:
+                print(self.move_list)
 
     def handle_enter(self, event):
         x = ord(event.widget['text'][0]) - 65
@@ -86,5 +89,3 @@ class Controller:
                 self.view.board_spaces[i][j].bind("<Enter>", self.handle_enter)
                 self.view.board_spaces[i][j].bind("<Leave>", self.handle_leave)
                 self.view.board_spaces[i][j].bind("<Button-1>", self.handle_click)
-        self.view.restart_btn.bind("<Button-1>", self.restart_game)
-        self.view.ai_move_btn.bind("<Button-1>", self.handle_agent_move)

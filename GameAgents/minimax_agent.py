@@ -3,7 +3,7 @@ from copy import deepcopy
 from math import inf
 
 
-class Node():
+class Node:
     def __init__(self, parent=None, value=0, child_nodes=[], move=None):
         self.value = value
         self.children = child_nodes
@@ -13,8 +13,9 @@ class Node():
 
 class MinimaxAgent(Agent):
 
-    def __init__(self, engine):
+    def __init__(self, engine, depth=3):
         self.engine = engine
+        self.depth = depth
 
     def minimax(self, node, depth, maximizing_player):
         if depth == 0 or len(node.children) == 0:
@@ -93,9 +94,8 @@ class MinimaxAgent(Agent):
             self.construct_value_tree(child, deepcopy(engine), depth-1)
 
     def compute_next_move(self):
-        depth = 2
         engine_copy = deepcopy(self.engine)
         root = Node()
-        self.construct_value_tree(root, engine_copy, depth)
-        node = self.minimax(root, depth, True)
+        self.construct_value_tree(root, engine_copy, self.depth)
+        node = self.minimax(root, self.depth, True)
         return node.move
