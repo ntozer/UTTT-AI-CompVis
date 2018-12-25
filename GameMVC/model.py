@@ -6,7 +6,7 @@ class Engine:
         self.board = [[None for i in range(9)] for j in range(9)]
         self.master_board = [None for i in range(9)]  # contains the win states of all mini boards
         self.prev_move = Coord(None, None)
-        self.player = None
+        self.player = 1
         self.game_state = None
 
     @staticmethod
@@ -84,13 +84,13 @@ class Engine:
 
     def make_move(self, move):
         if self.check_valid_move(move):
-            self.update_player()
             # movement updates
             self.board[move.x][move.y] = self.player
             self.prev_move = move
             # game state updates
             self.update_master_board()
             self.update_game_state()
+            self.update_player()
             return 1
         return None
 
@@ -98,5 +98,5 @@ class Engine:
         self.board = [[None for i in range(9)] for j in range(9)]
         self.master_board = [None for i in range(9)]
         self.prev_move = Coord(None, None)
-        self.player = None
+        self.player = 1
         self.game_state = None

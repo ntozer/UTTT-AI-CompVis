@@ -5,9 +5,9 @@ import GameAgents.evaluation_functions
 
 
 class Node:
-    def __init__(self, parent=None, value=0, child_nodes=[], move=None):
+    def __init__(self, parent=None, value=0, move=None):
         self.value = value
-        self.children = child_nodes
+        self.children = []
         self.parent = parent
         self.move = move
 
@@ -16,6 +16,7 @@ class MinimaxAgent(Agent):
     def __init__(self, engine, depth=3):
         self.engine = engine
         self.depth = depth
+        self.root = None
 
     def minimax(self, node, depth, maximizing_player):
         if depth == 0 or len(node.children) == 0:
@@ -50,15 +51,14 @@ class MinimaxAgent(Agent):
             return
         for move in engine.get_valid_moves():
             child = Node(parent=node, move=move)
-            child.children = []
             node.children.append(child)
         for child in node.children:
             self.construct_value_tree(child, deepcopy(engine), depth-1)
 
     def compute_next_move(self):
         engine_copy = deepcopy(self.engine)
-        root = Node()
-        self.construct_value_tree(root, engine_copy, self.depth)
-        node = self.minimax(root, self.depth, True)
+        self.root = Node()
+        self.construct_value_tree(self.root, engine_copy, self.depth)
+        node = self.minimax(self.root, self.depth, True)
         print(f'Minimax Move: {chr(node.move.x + 97)}{node.move.y}')
         return node.move
