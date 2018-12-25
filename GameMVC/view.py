@@ -15,12 +15,22 @@ class View(tk.Frame):
 
         # creating game board interface
         self.board_spaces = [[tk.Label(self, text=chr(65+i)+str(j), font='Courier', bg=(self.colors[0] if i%2==0 else self.colors[1]), width=4, height=2) for j in range(9)] for i in range(9)]
+        self.create_board_ui()
+        # self.after(10000, self.create_settings_ui)
+
+    def create_board_ui(self):
         for i in range(9):
             for j in range(9):
                 k, l = self.convert_board_index(i, j)
                 self.board_spaces[i][j].grid(row=k, column=l)
-                
-        # self.menubar = tk.Menu(self)
+
+    def clear_board_ui(self):
+        for i in range(9):
+            for j in range(9):
+                self.board_spaces[i][j].grid_forget()
+
+    def create_settings_ui(self):
+        self.clear_board_ui()
 
     def convert_board_index(self, i, j):
         # calculation of converted row idx
@@ -57,10 +67,14 @@ class View(tk.Frame):
                     self.update_visuals(coord, player)
 
     def popup_msg(self, msg):
+        def popup_func():
+            popup.destroy()
+            self.clear_board_ui()
+
         popup = tk.Tk()
         popup.wm_title()
         label = tk.Label(popup, text=msg)
         label.pack(side='top', fill='x', pady=10)
-        btn = tk.Button(popup, text='Okay', command=popup.destroy)
+        btn = tk.Button(popup, text='Okay', command=popup_func)
         btn.pack()
         popup.mainloop()

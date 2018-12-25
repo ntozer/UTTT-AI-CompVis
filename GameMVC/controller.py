@@ -8,7 +8,7 @@ class Controller:
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
         self.player1 = MonteCarloAgent(engine=self.model)
-        self.player2 = MinimaxAgent(engine=self.model)
+        self.player2 = None
         self.write_moves = False
         self.move_list = []
         self.simulate = False
