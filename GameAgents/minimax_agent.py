@@ -26,7 +26,7 @@ class MinimaxAgent(Agent):
             max_value = -inf
             for child in node.children:
                 child_max = self.minimax(child, depth-1, False).value
-                if max_value < child_max:
+                if max_value <= child_max:
                     max_child = child
                     max_value = child_max
             return max_child
@@ -35,7 +35,7 @@ class MinimaxAgent(Agent):
             min_value = inf
             for child in node.children:
                 child_min = self.minimax(child, depth-1, True).value
-                if min_value > child_min:
+                if min_value >= child_min:
                     min_child = child
                     min_value = child_min
             return min_child

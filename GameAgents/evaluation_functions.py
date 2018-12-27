@@ -14,13 +14,19 @@ def simple_eval(engine):
         for j in range(len(board[0])):
             board_pos = board[i][j]
             if board_pos is not None and master_board[i] is None:
-                for k in [i, j]:
-                    if k in corners:
-                        value += 1.25 if board_pos == player else -1.25
-                    elif k in sides:
-                        value += 1 if board_pos == player else -1
-                    else:
-                        value += 1.5 if board_pos == player else -1.5
+                if i in corners:
+                    value += 1.25 if board_pos == player else -1.25
+                elif i in sides:
+                    value += 1 if board_pos == player else -1
+                else:
+                    value += 1.5 if board_pos == player else -1.5
+
+                if j in corners:
+                    value += 0.375 if board_pos == player else -0.375
+                elif j in sides:
+                    value += 0.25 if board_pos == player else -0.25
+                else:
+                    value += 0.50 if board_pos == player else -0.50
     for i in range(len(master_board)):
         if master_board[i] is not None:
             if i in sides:
