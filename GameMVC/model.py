@@ -90,7 +90,8 @@ class Engine:
             # game state updates
             self.update_master_board()
             self.update_game_state()
-            self.update_player()
+            if self.game_state is None:
+                self.update_player()
             return 1
         return None
 
