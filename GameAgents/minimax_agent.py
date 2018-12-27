@@ -29,6 +29,7 @@ class MinimaxAgent(Agent):
                 if max_value <= child_max:
                     max_child = child
                     max_value = child_max
+                    node.value = max_value
             return max_child
         else:
             min_child = None
@@ -38,6 +39,7 @@ class MinimaxAgent(Agent):
                 if min_value >= child_min:
                     min_child = child
                     min_value = child_min
+                    node.value = min_value
             return min_child
 
     def compute_position_value(self, engine):
@@ -59,6 +61,6 @@ class MinimaxAgent(Agent):
         engine_copy = deepcopy(self.engine)
         self.root = Node()
         self.construct_value_tree(self.root, engine_copy, self.depth)
-        node = self.minimax(self.root, self.depth, True)
-        print(f'Minimax Move: {chr(node.move.x + 97)}{node.move.y}')
+        node = self.minimax(self.root, self.depth, (self.engine.player == 1))
+        print(f'Minimax Move: {chr(node.move.x + 97)}{node.move.y}, Board Eval: {node.value}')
         return node.move

@@ -7,8 +7,8 @@ class Controller:
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.player1 = MinimaxAgent(engine=self.model)
-        self.player2 = None
+        self.player1 = MonteCarloAgent(engine=self.model)
+        self.player2 = MinimaxAgent(engine=self.model, depth=4)
         self.write_moves = False
         self.move_list = []
         self.simulate = False
@@ -22,10 +22,10 @@ class Controller:
                 self.view.popup_msg('The game ended in a draw')
 
     def handle_next_move(self):
-        if self.model.player == 2 or self.model.player is None:
+        if self.model.player == 1:
             if self.player1 is not None:
                 self.handle_agent_move(agent=self.player1)
-        elif self.model.player == 1:
+        elif self.model.player == 2:
             if self.player2 is not None:
                 self.handle_agent_move(agent=self.player2)
 

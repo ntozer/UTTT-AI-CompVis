@@ -96,7 +96,7 @@ class MonteCarloAgent(Agent):
         self.cur_node = self.tree_root
 
     def reset_tree(self):
-        player = self.engine.player if self.engine.player is not None else 1
+        player = 1 if self.engine.player != 1 else 2
         self.tree_root = Node(player=player)
         self.cur_node = self.tree_root
 
