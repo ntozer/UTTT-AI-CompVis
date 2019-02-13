@@ -7,8 +7,8 @@ class Controller:
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.player1 = MonteCarloAgent(engine=self.model)
-        self.player2 = MinimaxAgent(engine=self.model, depth=4)
+        self.player1 = AlphaBetaAgent(engine=self.model, player=1, depth=5)
+        self.player2 = MinimaxAgent(engine=self.model, player=2, depth=3)
         self.write_moves = False
         self.move_list = []
         self.simulate = False
@@ -17,9 +17,9 @@ class Controller:
     def check_game_over(self):
         if self.model.game_state is not None:
             if self.model.game_state != 0:
-                self.view.popup_msg(f'Player {self.model.player} won')
+                self.view.popup_msg(f'Player {self.model.player} won', self.restart_game)
             else:
-                self.view.popup_msg('The game ended in a draw')
+                self.view.popup_msg('The game ended in a draw', self.restart_game)
 
     def handle_next_move(self):
         if self.model.player == 1:
@@ -77,11 +77,10 @@ class Controller:
         elif event.widget['bg'] in [self.view.valid_colors[1], self.view.invalid_colors[1]]:
             event.widget.configure(bg=self.view.colors[1])
 
-    def restart_game(self, event):
+    def restart_game(self):
         self.model.reset_game()
         self.view.reset_board()
-        self.player1 = MonteCarloAgent(self.model)
-        self.player2 = MonteCarloAgent(self.model)
+        self.handle_next_move()
 
     def bind_actions(self):
         for i in range(9):

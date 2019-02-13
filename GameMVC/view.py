@@ -66,11 +66,11 @@ class View(tk.Frame):
                     player = board[i][j]
                     self.update_visuals(coord, player)
 
-    def popup_msg(self, msg):
+    def popup_msg(self, msg, func=None):
         def popup_func():
+            if func is not None:
+                func()
             popup.destroy()
-            self.clear_board_ui()
-
         popup = tk.Tk()
         popup.wm_title()
         label = tk.Label(popup, text=msg)

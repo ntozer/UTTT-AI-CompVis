@@ -13,10 +13,12 @@ class Node:
 
 
 class MinimaxAgent(Agent):
-    def __init__(self, engine, depth=3):
+    def __init__(self, engine, player, depth=3):
         self.engine = engine
         self.depth = depth
         self.root = None
+        self.player = player
+        self.agent_type = 'Minimax'
 
     def minimax(self, node, depth, maximizing_player):
         if depth == 0 or len(node.children) == 0:
@@ -61,6 +63,6 @@ class MinimaxAgent(Agent):
         engine_copy = deepcopy(self.engine)
         self.root = Node()
         self.construct_value_tree(self.root, engine_copy, self.depth)
-        node = self.minimax(self.root, self.depth, (self.engine.player == 1))
-        print(f'Minimax Move: {chr(node.move.x + 97)}{node.move.y}, Board Eval: {node.value}')
+        node = self.minimax(self.root, self.depth, self.player == 1)
+        print(f'{self.agent_type}: {chr(node.move.x + 97)}{node.move.y}, Board Eval: {node.value}')
         return node.move
