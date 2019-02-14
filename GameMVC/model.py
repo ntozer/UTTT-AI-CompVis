@@ -68,12 +68,22 @@ class Engine:
 
     def get_valid_moves(self):
         valid_moves = []
-        for i in range(9):
-            if self.master_board[i] is None:
+        if self.prev_move.x is None and self.prev_move.y is None:
+            for i in range(9):
                 for j in range(9):
-                    if self.check_valid_move(Coord(i, j)):
-                        valid_moves.append(Coord(i, j))
-
+                    valid_moves.append(Coord(i, j))
+        elif self.master_board[self.prev_move.y] is None:
+            for j in range(9):
+                move = Coord(self.prev_move.y, j)
+                if self.check_valid_move(move):
+                    valid_moves.append(move)
+        else:
+            for i in range(9):
+                if self.master_board[i] is None:
+                    for j in range(9):
+                        move = Coord(i, j)
+                        if self.check_valid_move(move):
+                            valid_moves.append(move)
         return valid_moves
 
     def update_player(self):

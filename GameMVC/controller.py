@@ -1,3 +1,5 @@
+import time
+
 from GameMVC import *
 from GameAgents import *
 
@@ -7,8 +9,8 @@ class Controller:
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.player1 = AlphaBetaAgent(engine=self.model, player=1, depth=5)
-        self.player2 = MinimaxAgent(engine=self.model, player=2, depth=3)
+        self.player1 = AlphaBetaAgent(engine=self.model, player=1, depth=4)
+        self.player2 = MonteCarloAgent(engine=self.model, max_sim=1000)
         self.write_moves = False
         self.move_list = []
         self.simulate = False
@@ -37,7 +39,9 @@ class Controller:
             self.handle_move(move)
 
     def handle_agent_move(self, agent, event=None):
+        move_time = time.time()
         move = agent.compute_next_move()
+        print(f'Move computation took {round(time.time() - move_time, 4)}s\n')
         self.handle_move(move)
 
     def handle_move(self, move):
@@ -80,7 +84,7 @@ class Controller:
     def restart_game(self):
         self.model.reset_game()
         self.view.reset_board()
-        self.handle_next_move()
+        self.view.after(self.delay, self.handle_next_move)
 
     def bind_actions(self):
         for i in range(9):

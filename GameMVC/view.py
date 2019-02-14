@@ -68,9 +68,9 @@ class View(tk.Frame):
 
     def popup_msg(self, msg, func=None):
         def popup_func():
+            popup.destroy()
             if func is not None:
                 func()
-            popup.destroy()
         popup = tk.Tk()
         popup.wm_title()
         label = tk.Label(popup, text=msg)

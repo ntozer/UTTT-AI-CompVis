@@ -86,7 +86,7 @@ class MonteCarloAgent(Agent):
             if child_avg_val > max_avg_val:
                 max_avg_val = child_avg_val
                 max_child = child
-        print(f'MonteCarlo Move: {chr(max_child.move.x + 97)}{max_child.move.y}, Val/Plays: {max_avg_val}')
+        print(f'MonteCarlo Move: {chr(max_child.move.x + 97)}{max_child.move.y}, Val/Plays: {round(max_avg_val, 4)}')
         self.tree_root = max_child
         self.tree_root.parent = None
         return self.tree_root.move
