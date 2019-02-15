@@ -32,7 +32,7 @@ class MinimaxAgent(Agent):
                 child = self.build_child(parent=node, move=move)
                 _, child_max = self.minimax(child, depth-1, False)
                 child.engine.undo_move(child.move)
-                if max_value <= child_max:
+                if max_value < child_max:
                     max_child = child
                     max_value = child_max
                     node.value = max_value
@@ -44,7 +44,7 @@ class MinimaxAgent(Agent):
                 child = self.build_child(parent=node, move=move)
                 _, child_min = self.minimax(child, depth-1, True)
                 child.engine.undo_move(child.move)
-                if min_value >= child_min:
+                if min_value > child_min:
                     min_child = child
                     min_value = child_min
                     node.value = min_value

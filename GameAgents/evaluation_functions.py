@@ -39,5 +39,5 @@ def simple_eval(engine):
         if game_state == 0:
             value = 0
         else:
-            value = (inf if game_state == 1 else -inf)
+            value = (100 if game_state == 1 else -100)
     return value
