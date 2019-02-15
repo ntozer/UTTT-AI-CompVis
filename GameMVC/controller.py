@@ -9,7 +9,7 @@ class Controller:
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.player1 = MinimaxAgent(engine=self.model, player=1, depth=5)
+        self.player1 = MonteCarloAgent(engine=self.model)
         self.player2 = AlphaBetaAgent(engine=self.model, player=2, depth=6)
         self.write_moves = False
         self.move_list = []

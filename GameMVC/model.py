@@ -79,7 +79,7 @@ class Engine:
             for i in range(9):
                 for j in range(9):
                     valid_moves.append(Coord(i, j))
-        elif self.master_board[self.prev_move.y] is None:
+        elif self.master_board[self.prev_move.y] is None and None in self.board[self.prev_move.y]:
             for j in range(9):
                 move = Coord(self.prev_move.y, j)
                 if self.check_valid_move(move):
