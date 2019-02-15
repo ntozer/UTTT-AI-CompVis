@@ -4,6 +4,4 @@ class Coord(object):
         self.y = y
 
     def __eq__(self, other):
-        if isinstance(other, Coord):
-            return (self.x, self.y) == (other.x, other.y)
-        return False
+        return (self.x, self.y) == (other.x, other.y)
