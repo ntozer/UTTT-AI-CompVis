@@ -6,6 +6,7 @@ class Engine:
         self.board = [[None for i in range(9)] for j in range(9)]
         self.master_board = [None for i in range(9)]  # contains the win states of all mini boards
         self.prev_move = Coord(None, None)
+        self.moves = []
         self.player = 1
         self.game_state = None
 
@@ -29,9 +30,13 @@ class Engine:
                     return True
         return False
 
-    def update_master_board(self):
-        if self.check_board_win(self.board[self.prev_move.x]):
-            self.master_board[self.prev_move.x] = self.player
+    def update_master_board(self, move=None):
+        if move is None:
+            move = self.prev_move
+        if self.check_board_win(self.board[move.x]):
+            self.master_board[move.x] = self.player
+        else:
+            self.master_board[move.x] = None
 
     def update_game_state(self):
         def player_won():
@@ -43,6 +48,8 @@ class Engine:
             self.game_state = 1 if self.player == 1 else -1
         elif len(self.get_valid_moves()) == 0:
             self.game_state = 0
+        else:
+            self.game_state = None
 
     def check_valid_move(self, curr_move):
         if curr_move is None:
@@ -96,6 +103,7 @@ class Engine:
         if self.check_valid_move(move):
             # movement updates
             self.board[move.x][move.y] = self.player
+            self.moves.append(move)
             self.prev_move = move
             # game state updates
             self.update_master_board()
@@ -104,6 +112,20 @@ class Engine:
                 self.update_player()
             return 1
         return None
+
+    def undo_move(self, move=None):
+        if move is None:
+            move = self.prev_move
+        if move == Coord(None, None) or len(self.moves) == 0:
+            return
+        self.board[move.x][move.y] = None
+        self.update_master_board(move)
+        if self.game_state is None:
+            self.update_player()
+        self.update_game_state()
+        # hard coded for the last move
+        self.moves.pop(-1)
+        self.prev_move = self.moves[-1] if len(self.moves) > 0 else Coord(None, None)
 
     def reset_game(self):
         self.board = [[None for i in range(9)] for j in range(9)]

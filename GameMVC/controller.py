@@ -9,12 +9,12 @@ class Controller:
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        self.player1 = AlphaBetaAgent(engine=self.model, player=1, depth=4)
-        self.player2 = MonteCarloAgent(engine=self.model, max_sim=1000)
+        self.player1 = MinimaxAgent(engine=self.model, player=1, depth=5)
+        self.player2 = AlphaBetaAgent(engine=self.model, player=2, depth=6)
         self.write_moves = False
         self.move_list = []
         self.simulate = False
-        self.delay = 1000
+        self.delay = 100
 
     def check_game_over(self):
         if self.model.game_state is not None:
