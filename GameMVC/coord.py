@@ -5,3 +5,6 @@ class Coord(object):
 
     def __eq__(self, other):
         return (self.x, self.y) == (other.x, other.y)
+
+    def to_tuple(self):
+        return self.x, self.y
