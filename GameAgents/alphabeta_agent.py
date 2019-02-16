@@ -12,22 +12,27 @@ class CacheObj:
 
 
 class AlphaBetaAgent(MinimaxAgent):
-    def __init__(self, engine, player, compute_time=1):
+    def __init__(self, engine, player, compute_time=1, allowed_depth=None):
         super().__init__(engine=engine, player=player)
         self.agent_type = 'AlphaBeta'
         self.compute_time = compute_time
+        self.allowed_depth = allowed_depth
         self.cache = {}
 
     def minimax(self, node, depth, maximizing_player):
         start_time = time.time()
         max_depth = 1
         while True:
-            child, _ = self.alpha_beta(node, max_depth, -inf, inf, maximizing_player)
+            child, value = self.alpha_beta(node, max_depth, -inf, inf, maximizing_player)
             if time.time() - start_time > self.compute_time:
+                break
+            if value == 10000 or value == -10000:
+                break
+            if self.allowed_depth is not None and max_depth == self.allowed_depth:
                 break
             max_depth += 1
         print(f'Max Depth {max_depth}')
-        return child, _
+        return child, value
 
     def alpha_beta(self, node, depth, alpha, beta, maximizing_player):
         if depth == 0 or node.engine.game_state is not None:

@@ -1,7 +1,7 @@
 from copy import deepcopy
 from math import inf
 
-import GameAgents.evaluation_functions
+import GameAgents.evaluator
 from .agent import Agent
 
 
@@ -58,7 +58,7 @@ class MinimaxAgent(Agent):
         return child
 
     def compute_position_value(self, engine):
-        return GameAgents.evaluation_functions.simple_eval(engine)
+        return GameAgents.evaluator.simple_eval(engine)
 
     def compute_next_move(self):
         self.root = Node(engine=deepcopy(self.engine))

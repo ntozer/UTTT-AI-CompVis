@@ -10,7 +10,7 @@ class Controller:
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
         self.player1 = AlphaBetaAgent(engine=self.model, player=1, compute_time=1)
-        self.player2 = MonteCarloAgent(engine=self.model, max_sim=1500)
+        self.player2 = GeneticAlphaBetaAgent(engine=self.model, player=1, genome=[0.5 for i in range(9)], allowed_depth=None)
         self.write_moves = False
         self.move_list = []
         self.simulate = False
