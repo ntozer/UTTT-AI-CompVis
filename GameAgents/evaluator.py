@@ -4,11 +4,12 @@ middle = [4]
 
 
 class Evaluator:
-    def __init__(self, engine, genome):
-        self.engine = engine
+    def __init__(self, genome):
         self.features = self.get_features()
+        self.genome_len = len(self.features)
         self.genome = genome
         self.player = None
+        self.engine = None
 
     def get_features(self):
         a = self.count_active_middles
@@ -22,7 +23,8 @@ class Evaluator:
         i = self.count_game_winning_moves
         return [a, b, c, d, e, f, g, h, i]
 
-    def eval(self):
+    def eval(self, engine):
+        self.engine = engine
         state_eval = 0
         if self.engine.game_state is not None:
             if self.engine.game_state == 0:

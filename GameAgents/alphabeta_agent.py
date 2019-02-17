@@ -31,7 +31,6 @@ class AlphaBetaAgent(MinimaxAgent):
             if self.allowed_depth is not None and max_depth == self.allowed_depth:
                 break
             max_depth += 1
-        print(f'Max Depth {max_depth}')
         return child, value
 
     def alpha_beta(self, node, depth, alpha, beta, maximizing_player):
