@@ -1,6 +1,23 @@
 corners = [0, 2, 6, 8]
 sides = [1, 3, 5, 7]
 middle = [4]
+adjacents = []
+for i in range(9):
+    to_check = None
+    if i in corners:
+        if i % 3 == 0:
+            to_check = [1, 3, 4]
+        elif i % 3 == 2:
+            to_check = [2, 3]
+    elif i in sides:
+        to_check = [1, 3]
+        if i % 3 == 2:
+            to_check.remove(1)
+    elif i in middle:
+        to_check = [1, 2, 3, 4]
+    for j in to_check:
+        if (i + j) <= 8:
+            adjacents.append((i, i+j))
 
 
 class Evaluator:
@@ -16,12 +33,14 @@ class Evaluator:
         b = self.count_active_corners
         c = self.count_active_sides
         d = self.count_board_winning_moves
-        e = self.count_won_middles
-        f = self.count_won_corners
-        g = self.count_won_sides
-        h = self.count_game_winning_boards
-        i = self.count_game_winning_moves
-        return [a, b, c, d, e, f, g, h, i]
+        e = self.count_empty_adjacent_moves
+        f = self.count_won_middles
+        g = self.count_won_corners
+        h = self.count_won_sides
+        i = self.count_game_winning_boards
+        j = self.count_game_winning_moves
+        k = self.count_empty_adjacent_boards
+        return [a, b, c, d, e, f, g, h, i, j, k]
 
     def eval(self, engine):
         self.engine = engine
@@ -74,6 +93,22 @@ class Evaluator:
             board_count, _ = self.num_board_winners(board)
             count += board_count
         return count
+
+    def num_empty_adjacents(self, board):
+        board_count = 0
+        for board_adj in list(map(lambda adj: (board[adj[0]], board[adj[1]]), adjacents)):
+            if board_adj.count(None) == 1 and board_adj.count(self.player):
+                board_count += 1
+        return board_count
+
+    def count_empty_adjacent_moves(self):
+        count = 0
+        for board in self.get_active_boards():
+            count += self.num_empty_adjacents(board)
+        return count
+
+    def count_empty_adjacent_boards(self):
+        return self.num_empty_adjacents(self.engine.master_board)
 
     def num_board_winners(self, board):
         count = 0
