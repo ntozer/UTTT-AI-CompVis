@@ -1,16 +1,17 @@
 import random
 from copy import deepcopy
-from multiprocessing import Process, Lock, Queue, Manager
+from multiprocessing import Process, Lock, Queue, Manager, cpu_count
 
 from GameMVC import Engine
 from GameAgents import GeneticAlphaBetaAgent
 
 
 class Simulator:
-    def __init__(self, num_generations=10, population_size=30, num_parents=4, epsilon=0.1, parallel=False):
+    def __init__(self, num_gens=10, pop_size=30, max_matchups=30, num_parents=4, epsilon=0.1, parallel=False):
         self.engine = Engine()
-        self.num_generations = num_generations
-        self.population_size = population_size
+        self.num_generations = num_gens
+        self.population_size = pop_size
+        self.max_matchups = max_matchups
         self.num_parents = num_parents
         self.epsilon = epsilon
         self.population = []
@@ -51,7 +52,7 @@ class Simulator:
     def build_random_sample(self):
         genome = []
         for i in range(self.genome_len):
-            genome.append(random.randrange(0, 10000) / 1000)
+            genome.append(random.randrange(0, 25000) / 1000)
         # if self.parallel:
             # return self.manager.Sample(Sample(genome))
         return self.init_sample(genome)
@@ -66,14 +67,19 @@ class Simulator:
             p1_gene = p1['genome'][i]
             p2_gene = p1['genome'][i]
             if mutate:
-                genome.append(random.randrange(0, 10000) / 100)
+                genome.append(random.randrange(0, 25000) / 1000)
             elif self.breed_method == 'randrange':
                 if p1_gene > p2_gene:
-                    genome.append(random.randrange(int(p2_gene * 100), int(p1_gene * 100)) / 100)
+                    gene = random.randrange(int(p2_gene * 1000), int(p1_gene * 1000)) / 1000
+                    genome.append(gene)
                 elif p1_gene < p2_gene:
-                    genome.append(random.randrange(int(p1_gene * 100), int(p2_gene * 100)) / 100)
+                    gene = random.randrange(int(p1_gene * 1000), int(p2_gene * 1000)) / 1000
+                    genome.append(gene)
                 else:
-                    genome.append(p1_gene)
+                    min_gene = p1_gene - 0.1 * p1_gene
+                    max_gene = p1_gene + 0.1 * p1_gene
+                    gene = random.randrange(int(min_gene * 1000), int(max_gene * 1000)) / 1000
+                    genome.append(gene)
             elif self.breed_method == 'weighted_sum':
                 p1_weight = p1.record / (p1.record + p2.record)
                 p2_weight = p2.record / (p1.record + p2.record)
@@ -103,10 +109,11 @@ class Simulator:
     def generate_matchups(self):
         def rotate(n):
             return n[1:] + n[:1]
+        matchups_per_sample = self.max_matchups if self.max_matchups < self.population_size else self.population_size-1
         matchups = []
         pop_size = self.population_size
         if pop_size % 2 == 0:
-            for i in range(pop_size-1):
+            for i in range(matchups_per_sample):
                 for j in range(pop_size // 2):
                     matchups.append((self.population[j], self.population[pop_size-1-j]))
                 constant = self.population[0]
@@ -115,7 +122,7 @@ class Simulator:
                 self.population = [constant, *self.population]
 
         else:
-            for i in range(pop_size-1):
+            for i in range(matchups_per_sample):
                 for j in range(pop_size // 2):
                     matchups.append((self.population[j], self.population[pop_size-2-j]))
                 self.population = rotate(self.population)
@@ -170,15 +177,15 @@ class Simulator:
             if self.matchups.qsize() == 0:
                 break
             matchup_lock.acquire()
-            matchup = self.matchups.get()
             print(f'Simulations left: {self.matchups.qsize()} in gen. {self.gen_num}')
+            matchup = self.matchups.get()
             matchup_lock.release()
             self.play_match(matchup, update_lock)
 
     def run_parallel(self):
-        for i in range(self.num_generations):
-            self.gen_num = i
-            print(f'\nBEGINNING GENERATION {i}')
+        for gen_num in range(self.num_generations):
+            self.gen_num = gen_num
+            print(f'\nBEGINNING GENERATION {gen_num}')
             self.generate_population()
             self.generate_matchups()
             matchup_lock = Lock()
@@ -188,16 +195,16 @@ class Simulator:
             for m in temp:
                 self.matchups.put(m)
             processes = []
-            for i in range(4):
+            for i in range(cpu_count()):
                 processes.append(Process(target=self.do_work, args=(matchup_lock, update_lock)))
                 processes[i].start()
-            for i in range(4):
+            for i in range(cpu_count()):
                 processes[i].join()
             self.select_parents()
             self.output_parent_genomes(self.gen_num)
 
 
 if __name__ == '__main__':
-    sim = Simulator(20, 15, 4, 0.1, parallel=True)
+    sim = Simulator(50, 25, 15, 5, 0.1, parallel=True)
     sim.run()
 
