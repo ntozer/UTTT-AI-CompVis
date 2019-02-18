@@ -128,12 +128,26 @@ class Simulator:
                 self.population = rotate(self.population)
         self.matchups = matchups
 
+    def generate_matchups_vs_parents(self):
+        if len(self.parents) == 0:
+            self.generate_matchups()
+        else:
+            matchups = []
+            for i in range(self.population_size):
+                for j in range(len(self.parents)):
+                    matchups.append((self.parents[j], self.population[i]))
+            self.matchups = matchups
+
     def play_match(self, matchup, lock=None):
         engine_copy = deepcopy(self.engine)
+        if lock is not None:
+            lock.acquire()
         p1 = matchup[0]
         p1_agent = GeneticAlphaBetaAgent(engine_copy, 1, p1['genome'], allowed_depth=4, simulation=True)
         p2 = matchup[1]
         p2_agent = GeneticAlphaBetaAgent(engine_copy, 2, p2['genome'], allowed_depth=4, simulation=True)
+        if lock is not None:
+            lock.release()
         while engine_copy.game_state is None:
             self.handle_next_move(engine_copy, p1_agent, p2_agent)
         if lock is not None:
@@ -187,7 +201,7 @@ class Simulator:
             self.gen_num = gen_num
             print(f'\nBEGINNING GENERATION {gen_num}')
             self.generate_population()
-            self.generate_matchups()
+            self.generate_matchups_vs_parents()
             matchup_lock = Lock()
             update_lock = Lock()
             temp = self.matchups
@@ -205,6 +219,6 @@ class Simulator:
 
 
 if __name__ == '__main__':
-    sim = Simulator(50, 25, 15, 5, 0.1, parallel=True)
+    sim = Simulator(50, 50, 20, 5, 0.1, parallel=True)
     sim.run()
 
