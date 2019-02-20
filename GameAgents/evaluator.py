@@ -29,18 +29,18 @@ class Evaluator:
         self.engine = None
 
     def get_features(self):
-        a = self.count_active_middles
-        b = self.count_active_corners
-        c = self.count_active_sides
-        d = self.count_board_winning_moves
-        e = self.count_empty_adjacent_moves
-        f = self.count_won_middles
-        g = self.count_won_corners
-        h = self.count_won_sides
-        i = self.count_game_winning_boards
-        j = self.count_game_winning_moves
-        k = self.count_empty_adjacent_boards
-        return [a, b, c, d, e, f, g, h, i, j, k]
+        f0 = self.count_active_middles
+        f1 = self.count_active_corners
+        f2 = self.count_active_sides
+        f3 = self.count_board_winning_moves
+        f4 = self.count_empty_adjacent_moves
+        f5 = self.count_won_middles
+        f6 = self.count_won_corners
+        f7 = self.count_won_sides
+        f8 = self.count_game_winning_boards
+        f9 = self.count_game_winning_moves
+        f10 = self.count_empty_adjacent_boards
+        return [f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10]
 
     def eval(self, engine):
         self.engine = engine

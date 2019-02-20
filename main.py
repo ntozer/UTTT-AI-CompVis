@@ -1,5 +1,11 @@
+import os
 import tkinter as tk
+
 from GameMVC import Controller
+
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def main():
