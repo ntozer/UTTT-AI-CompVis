@@ -1,10 +1,11 @@
+import math
 import os
 import pickle
 import random
 import sys
 import time
 from copy import deepcopy
-from multiprocessing import Process, Lock, Queue, Manager, cpu_count
+from multiprocessing import Process, Lock, Queue, Manager, cpu_count, Value
 
 from tqdm import tqdm
 
@@ -70,11 +71,11 @@ class Simulator:
 
     def build_breeded_sample(self):
         genome = []
+        p1 = self.parents.pop(random.randrange(0, len(self.parents)))
+        p2 = self.parents[random.randrange(0, len(self.parents))]
+        self.parents.append(p1)
         for i in range(self.genome_len):
             mutate = (random.randrange(0, 100) / 100) < self.epsilon
-            p1 = self.parents.pop(random.randrange(0, len(self.parents)))
-            p2 = self.parents[random.randrange(0, len(self.parents))]
-            self.parents.append(p1)
             p1_gene = p1['genome'][i]
             p2_gene = p1['genome'][i]
             if mutate:
@@ -86,6 +87,8 @@ class Simulator:
                 elif p1_gene < p2_gene:
                     gene = random.randrange(int(p1_gene * 1000), int(p2_gene * 1000)) / 1000
                     genome.append(gene)
+                elif p1_gene == p2_gene == 0:
+                    genome.append(p1_gene)
                 else:
                     min_gene = p1_gene - 0.1 * p1_gene
                     max_gene = p1_gene + 0.1 * p1_gene
@@ -96,8 +99,11 @@ class Simulator:
                 p2_weight = p2.record / (p1.record + p2.record)
                 gene = p1_gene * p1_weight + p2_gene * p2_weight
                 genome.append(gene)
-        # if self.parallel:
-            # return self.manager.Sample(Sample(genome))
+            elif self.breed_method == 'interpolate':
+                if random.randrange(0, 100) / 100 > 0.5:
+                    genome.append(p1_gene)
+                else:
+                    genome.append(p2_gene)
         return self.init_sample(genome)
 
     def generate_population(self):
@@ -120,13 +126,16 @@ class Simulator:
     def generate_matchups(self):
         def rotate(n):
             return n[1:] + n[:1]
-        matchups_per_sample = self.max_matchups if self.max_matchups < self.population_size else self.population_size-1
+        pop_size = len(self.population)
+        matchups_per_sample = self.max_matchups if self.max_matchups < pop_size else pop_size-1
         matchups = []
-        pop_size = self.population_size
         if pop_size % 2 == 0:
             for i in range(matchups_per_sample):
                 for j in range(pop_size // 2):
-                    matchups.append((self.population[j], self.population[pop_size-1-j]))
+                    if random.randrange(0, 100) / 100 > 0.5:
+                        matchups.append((self.population[j], self.population[pop_size-1-j]))
+                    else:
+                        matchups.append((self.population[pop_size-1-j], self.population[j]))
                 constant = self.population[0]
                 self.population.pop(0)
                 self.population = rotate(self.population)
@@ -149,14 +158,26 @@ class Simulator:
                     matchups.append((self.parents[j], self.population[i]))
             self.matchups = matchups
 
+    def generate_tournament_mactchups(self):
+        matchups = []
+        pop_size = len(self.population)
+        if len(self.population) % 2 != 0:
+            raise Exception(f'Invalid population size {pop_size}, must be 2^x for tournament matchups')
+        for i in range(len(self.population)//2):
+            if random.randrange(0, 100) / 100 > 0.5:
+                matchups.append((self.population[i], self.population[pop_size-1-i]))
+            else:
+                matchups.append((self.population[pop_size-1-i], self.population[i]))
+        self.matchups = matchups
+
     def play_match(self, matchup, lock=None):
         engine_copy = deepcopy(self.engine)
         if lock is not None:
             lock.acquire()
         p1 = matchup[0]
-        p1_agent = GeneticAlphaBetaAgent(engine_copy, 1, p1['genome'], allowed_depth=2, simulation=True)
+        p1_agent = GeneticAlphaBetaAgent(engine_copy, 1, p1['genome'], allowed_depth=4, simulation=True)
         p2 = matchup[1]
-        p2_agent = GeneticAlphaBetaAgent(engine_copy, 2, p2['genome'], allowed_depth=2, simulation=True)
+        p2_agent = GeneticAlphaBetaAgent(engine_copy, 2, p2['genome'], allowed_depth=4, simulation=True)
         if lock is not None:
             lock.release()
         while engine_copy.game_state is None:
@@ -199,7 +220,8 @@ class Simulator:
             print(f'Parent {count:02d}', end=': [ ')
             for gene in parent['genome']:
                 print(f'{gene:06.3f}', end=' ]\t' if gene == parent['genome'][-1] else ', ')
-            print(f'Fitness (ELO): {parent["elo"]:04d}')
+            # print(f'Fitness (ELO): {parent["elo"]:04d}')
+            print(f'Fitness (Wins): {parent["wins"]:04.1f}')
             count += 1
 
     def run(self):
@@ -217,13 +239,13 @@ class Simulator:
                 self.select_parents()
                 self.output_parent_genomes(i)
 
-    def do_work(self, matchup_lock, update_lock):
+    def do_work(self, matchup_count, matchup_lock, update_lock):
         while True:
             if self.matchups.qsize() == 0:
                 break
             matchup_lock.acquire()
-            cur_matchup = self.num_matchups - self.matchups.qsize() + 1
-            sys.stdout.write(f'\rSimulation {cur_matchup:04d}/{self.num_matchups} of Generation {self.gen_num:03d}')
+            matchup_count.value += 1
+            sys.stdout.write(f'\rSimulation {matchup_count.value:04d}/{self.num_matchups:04d} of Generation {self.gen_num:03d}')
             sys.stdout.flush()
             matchup = self.matchups.get()
             matchup_lock.release()
@@ -279,8 +301,38 @@ class Simulator:
             self.save_parents()
             clear_screen()
 
+    def run_tournament(self):
+        for gen_num in tqdm(range(1, self.num_generations + 1)):
+            self.gen_num = gen_num
+            time.sleep(1)
+            print(f'\nBEGINNING GENERATION {gen_num:03d}')
+            self.init_parents()
+            self.output_parent_genomes()
+            self.generate_population()
+            matchup_count = Value('i', 0)
+            while len(self.population) > self.num_parents:
+                self.generate_tournament_mactchups()
+                self.num_matchups = sum([2**i for i in range(int(math.log2(self.num_parents)), int(math.log2(self.population_size)))])
+                matchup_lock = Lock()
+                update_lock = Lock()
+                temp = self.matchups
+                self.matchups = Queue()
+                for m in temp:
+                    self.matchups.put(m)
+                processes = []
+                for i in range(cpu_count()):
+                    processes.append(Process(target=self.do_work, args=(matchup_count, matchup_lock, update_lock)))
+                    processes[i].start()
+                for i in range(cpu_count()):
+                    processes[i].join()
+                self.population = sorted(self.population, key=lambda k: k['wins'], reverse=True)
+                self.population = self.population[:len(self.population)//2]
+            self.parents = self.population[:self.num_parents]
+            self.save_parents()
+            clear_screen()
+
 
 if __name__ == '__main__':
-    sim = Simulator(250, 200, 50, 5, 0.1, parallel=True)
-    sim.run()
+    sim = Simulator(num_gens=256, pop_size=256, max_matchups=32, num_parents=8, epsilon=0.1, parallel=True)
+    sim.run_tournament()
 

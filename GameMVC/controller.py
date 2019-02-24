@@ -9,9 +9,9 @@ class Controller:
         self.model = Engine()
         self.view = View(root)
         self.view.pack(fill='both', expand=True)
-        genome = [ 15.331, 12.418, 08.583, 18.226, 00.153, 22.630, 24.720, 24.055, 29.798, 15.379, 22.054 ]
-        self.player1 = GeneticAlphaBetaAgent(engine=self.model, genome=genome, player=1, allowed_depth=None)
-        self.player2 = AlphaBetaAgent(engine=self.model, player=2, compute_time=1)
+        self.player1 = MonteCarloAgent(engine=self.model)  # AlphaBetaAgent(engine=self.model, player=2, compute_time=1)
+        genome = [02.465, 02.226, 05.595, 23.435, 01.027, 14.250, 71.031, 27.119, 47.790, 23.584, 16.299]
+        self.player2 = GeneticAlphaBetaAgent(engine=self.model, genome=genome, player=2, allowed_depth=None)
         self.write_moves = False
         self.move_list = []
         self.simulate = False
