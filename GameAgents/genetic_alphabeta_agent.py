@@ -1,15 +1,24 @@
+import os
+import pickle
+import random
 from copy import deepcopy
 
 from GameAgents import AlphaBetaAgent
-from GameAgents.evaluator import Evaluator
+from GameAgents.evaluator import Evaluator, NeuralNetworkEvaluator
 from GameAgents.minimax_agent import Node
 
 
 class GeneticAlphaBetaAgent(AlphaBetaAgent):
-    def __init__(self, engine, player, genome, compute_time=1, allowed_depth=5, simulation=False):
+    def __init__(self, engine, player, genome, compute_time=1, allowed_depth=None, simulation=False):
         super().__init__(engine, player, compute_time, allowed_depth)
         self.agent_type = 'Genetic AlphaBeta'
-        self.evaluator = Evaluator(genome)
+        if not simulation and genome is None:
+            dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+            pickle_path = os.path.join(dir_path, 'scratch/genome.p')
+            with open(pickle_path, 'rb') as genome_file:
+                genomes = pickle.load(genome_file)
+            genome = genomes[random.randrange(0, len(genomes))]
+        self.evaluator = NeuralNetworkEvaluator(genome)
         self.simulation = simulation
 
     def compute_position_value(self, engine):

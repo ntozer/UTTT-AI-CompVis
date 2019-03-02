@@ -26,7 +26,8 @@ class Simulator:
         self.matchups = []
         self.parents = []
         self.breed_method = 'randrange'
-        self.genome_len = 11
+        self.neural = True
+        self.genome_len = 488 if self.neural else 11
         self.gen_num = 0
         self.parallel = parallel
         self.num_matchups = 0
@@ -64,36 +65,39 @@ class Simulator:
     def build_random_sample(self):
         genome = []
         for i in range(self.genome_len):
-            genome.append(random.randrange(0, 50000) / 1000)
+            genome.append((random.randrange(0, 20000) - 10000) / 10000)
         # if self.parallel:
             # return self.manager.Sample(Sample(genome))
         return self.init_sample(genome)
 
     def build_breeded_sample(self):
-        genome = []
+        genome = [0 for i in range(self.genome_len)]
         p1 = self.parents.pop(random.randrange(0, len(self.parents)))
         p2 = self.parents[random.randrange(0, len(self.parents))]
         self.parents.append(p1)
         for i in range(self.genome_len):
             mutate = (random.randrange(0, 100) / 100) < self.epsilon
             p1_gene = p1['genome'][i]
-            p2_gene = p1['genome'][i]
+            p2_gene = p2['genome'][i]
             if mutate:
-                genome.append(random.randrange(0, 50000) / 1000)
+                genome[i] = (random.randrange(0, 20000) - 10000) / 10000
             elif self.breed_method == 'randrange':
-                if p1_gene > p2_gene:
-                    gene = random.randrange(int(p2_gene * 1000), int(p1_gene * 1000)) / 1000
-                    genome.append(gene)
-                elif p1_gene < p2_gene:
-                    gene = random.randrange(int(p1_gene * 1000), int(p2_gene * 1000)) / 1000
-                    genome.append(gene)
-                elif p1_gene == p2_gene == 0:
-                    genome.append(p1_gene)
-                else:
-                    min_gene = p1_gene - 0.1 * p1_gene
-                    max_gene = p1_gene + 0.1 * p1_gene
-                    gene = random.randrange(int(min_gene * 1000), int(max_gene * 1000)) / 1000
-                    genome.append(gene)
+                try:
+                    if p1_gene > p2_gene:
+                        gene = (random.randrange(int(p2_gene * 10000 + 10000), int(p1_gene * 10000 + 10000)) - 10000) / 10000
+                        genome[i] = gene
+                    elif p1_gene < p2_gene:
+                        gene = (random.randrange(int(p1_gene * 10000 + 10000), int(p2_gene * 10000 + 10000)) - 10000) / 10000
+                        genome[i] = gene
+                    elif p1_gene == p2_gene:
+                        genome[i] = p1_gene
+                except ValueError:
+                    genome[i] = p1_gene
+                # else:
+                #     min_gene = p1_gene - 0.1 * p1_gene
+                #     max_gene = p1_gene + 0.1 * p1_gene
+                #     gene = random.randrange(int(min_gene * 1000), int(max_gene * 1000)) / 1000
+                #     genome.append(gene)
             elif self.breed_method == 'weighted_sum':
                 p1_weight = p1.record / (p1.record + p2.record)
                 p2_weight = p2.record / (p1.record + p2.record)
@@ -175,8 +179,10 @@ class Simulator:
         if lock is not None:
             lock.acquire()
         p1 = matchup[0]
-        p1_agent = GeneticAlphaBetaAgent(engine_copy, 1, p1['genome'], allowed_depth=4, simulation=True)
         p2 = matchup[1]
+        if p1['genome'] != self.genome_len or p2['genome'] != self.genome_len:
+            pass
+        p1_agent = GeneticAlphaBetaAgent(engine_copy, 1, p1['genome'], allowed_depth=4, simulation=True)
         p2_agent = GeneticAlphaBetaAgent(engine_copy, 2, p2['genome'], allowed_depth=4, simulation=True)
         if lock is not None:
             lock.release()
@@ -307,7 +313,7 @@ class Simulator:
             time.sleep(1)
             print(f'\nBEGINNING GENERATION {gen_num:03d}')
             self.init_parents()
-            self.output_parent_genomes()
+            # self.output_parent_genomes()
             self.generate_population()
             matchup_count = Value('i', 0)
             while len(self.population) > self.num_parents:

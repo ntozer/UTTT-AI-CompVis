@@ -1,3 +1,5 @@
+from nn import NeuralNetwork
+
 corners = [0, 2, 6, 8]
 sides = [1, 3, 5, 7]
 middle = [4]
@@ -163,6 +165,41 @@ class Evaluator:
             if self.engine.master_board[i] == self.player:
                 count += 1
         return count
+
+
+class NeuralNetworkEvaluator(Evaluator):
+    def __init__(self, weights=None):
+        self.weights = weights
+        super().__init__(weights)
+        self.network = NeuralNetwork(input_shape=(1, 22))
+        self.genome_len = self.network.num_nodes
+        if self.weights is not None:
+            self.network.weights = self.network.weights_to_ndarray(self.weights)
+        else:
+            self.weights = self.network.weights_to_list()
+            self.genome = self.weights
+
+    def eval(self, engine):
+        self.engine = engine
+        state_eval = 0
+        if self.engine.game_state is not None:
+            if self.engine.game_state == 0:
+                return 0
+            else:
+                return 10000 if self.engine.game_state == 1 else -10000
+        state_eval = self.gene_eval()
+        return state_eval
+
+    def gene_eval(self):
+        feature_vec = []
+        for player in [1, 2]:
+            player_vec = []
+            if self.engine.game_state is None:
+                self.player = player
+            for feature in self.features:
+                player_vec.append(feature())
+            feature_vec.extend(player_vec)
+        return self.network.feedforward(feature_vec)
 
 
 def simple_eval(engine):
